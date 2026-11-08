@@ -81,6 +81,7 @@ export function createSort(shell: GameShell): GameController {
     board.render(paint);
     board.animate([k], 'hx-anim-snap');
     sfx('place');
+    if (stack.length >= 5) shell.mood('sorpresa', 900);
     drawTray();
     drawHud(goalsShown);
 
@@ -88,6 +89,8 @@ export function createSort(shell: GameShell): GameController {
       display = engine.state.board;
       board.render(paint);
       drawHud();
+      // nervioso cuando quedan 3 celdas vacías o menos
+      shell.mood(display.keys().filter(c => !display.get(c).length).length <= 3 ? 'nervioso' : 'feliz');
       checkEnd();
     };
     const schedule = (ms: number, fn: () => void) => { pending = { timer: window.setTimeout(() => { pending = null; fn(); }, ms), finish }; };
@@ -109,7 +112,8 @@ export function createSort(shell: GameShell): GameController {
         const top = display.get(e.key).slice(-1)[0];
         shell.juice.burst(board, [e.key], () => top, 0, 14);
         // combo cuando una sola jugada cumple 2 o más metas (al llegar a la última)
-        if (gained >= 2 && steps.slice(i + 1).every(x => x.type !== 'stackCleared')) shell.juice.combo(gained);
+        if (gained >= 2 && steps.slice(i + 1).every(x => x.type !== 'stackCleared')) { shell.juice.combo(gained); shell.mood('celebra', 1300); }
+        else shell.mood('feliz', 900);
         sfx('goal');
         schedule(dur('base'), () => {
           const st = display.get(e.key);

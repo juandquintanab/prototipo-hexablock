@@ -72,7 +72,11 @@ export function createMerge(shell: GameShell): GameController {
         shell.juice.burst(board, merged.map(m => m.key), k => `merge-${Math.min(engine.state.board.get(k), 2048)}`, 0);
         shell.juice.points(board, merged.map(m => m.key), merged.reduce((a, m) => a + m.value, 0));
         shell.juice.combo(merged.length);
+        shell.mood(merged.length >= 2 ? 'celebra' : 'feliz', merged.length >= 2 ? 1300 : 900);
       } else sfx('place');
+      // nervioso cuando quedan 2 celdas libres o menos
+      const b = engine.state.board;
+      shell.mood(b.keys().filter(k => b.get(k) === 0).length <= 2 ? 'nervioso' : 'feliz');
       recordMerge(engine.state.score, engine.state.maxTile);
       checkEnd();
     };

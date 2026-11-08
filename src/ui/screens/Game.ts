@@ -13,7 +13,7 @@ import { showInstruction } from '../overlays/Instruction';
 import { showPause } from '../overlays/Pause';
 import { showResult } from '../overlays/Result';
 import { go, Route, Screen } from '../router';
-import { el, esc, iconBtn } from '../ui';
+import { el, esc, hexi, iconBtn } from '../ui';
 
 const FACTORIES: Record<GameId, GameFactory> = { lines: createLines, fit: createFit, sort: createSort, merge: createMerge };
 
@@ -32,7 +32,7 @@ export function GameScreen(r: Extract<Route, { name: 'game' }>): Screen {
     </div>
     <div class="game__sub" data-sub></div>
     <div class="game__board" data-board></div>
-    <div class="hx-tray game__tray"><div class="hx-tray__in" data-tray></div></div>
+    <div class="hx-tray game__tray"><div class="hx-tray__in" data-tray></div><div class="game__hexi" data-hexi aria-hidden="true"></div></div>
   </section>`);
   const q = (sel: string) => s.querySelector<HTMLElement>(sel)!;
 
@@ -53,11 +53,31 @@ export function GameScreen(r: Extract<Route, { name: 'game' }>): Screen {
     countFrame = requestAnimationFrame(step);
   };
 
+  // Hexi en la esquina: humor de base + reacciones cortas
+  const hexiEl = q('[data-hexi]');
+  let baseMood: H.Mood = 'feliz', shownMood: H.Mood | null = null, moodTimer = 0;
+  const showMood = (m: H.Mood) => {
+    if (m === shownMood) return;
+    shownMood = m;
+    hexiEl.innerHTML = hexi({ mood: m, size: 56 });
+  };
+
   const shell: GameShell = {
     game, level, root: s,
     top: q('[data-top]'), hudCenter: q('[data-center]'), hudRight: q('[data-right]'),
     sub: q('[data-sub]'), boardWrap: q('[data-board]'), tray: q('[data-tray]'),
     juice: new Juice(s),
+    mood(m, ms) {
+      if (ended) return;
+      if (ms == null) {
+        baseMood = m;
+        if (!moodTimer) showMood(m);
+        return;
+      }
+      clearTimeout(moodTimer);
+      showMood(m);
+      moodTimer = window.setTimeout(() => { moodTimer = 0; showMood(baseMood); }, ms);
+    },
     isActive: () => !paused && !ended && !intro,
     setCenter(label, value, small) {
       const numeric = typeof value === 'number';
@@ -69,6 +89,9 @@ export function GameScreen(r: Extract<Route, { name: 'game' }>): Screen {
       }
     },
     end(spec, delayMs = 450) {
+      clearTimeout(moodTimer);
+      moodTimer = 0;
+      showMood(spec.win ? 'celebra' : 'triste');
       ended = true;
       endTimer = window.setTimeout(() => {
         sfx(spec.win ? 'win' : 'lose');
@@ -76,7 +99,7 @@ export function GameScreen(r: Extract<Route, { name: 'game' }>): Screen {
         if (spec.win || spec.celebrate) shell.juice.confetti();
       }, delayMs);
     },
-    reopen() { ended = false; },
+    reopen() { ended = false; showMood(baseMood); },
     actions: {
       again: () => restart(),
       next: () => go(level < LEVEL_COUNT ? { name: 'game', game, level: level + 1 } : { name: 'levels', game: game as 'fit' }),
@@ -90,6 +113,10 @@ export function GameScreen(r: Extract<Route, { name: 'game' }>): Screen {
     ended = false;
     shownValue = null;
     cancelAnimationFrame(countFrame);
+    clearTimeout(moodTimer);
+    moodTimer = 0;
+    baseMood = 'feliz';
+    showMood('feliz');
     ctrl = FACTORIES[game](shell);
   }
   function restart(): void {
@@ -114,5 +141,5 @@ export function GameScreen(r: Extract<Route, { name: 'game' }>): Screen {
   mount();
   showInstruction(s, game, () => { intro = false; ctrl.onStart?.(); });
 
-  return { el: s, destroy: () => { clearTimeout(endTimer); ctrl.destroy(); } };
+  return { el: s, destroy: () => { clearTimeout(endTimer); clearTimeout(moodTimer); cancelAnimationFrame(countFrame); ctrl.destroy(); } };
 }

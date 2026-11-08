@@ -1,4 +1,4 @@
-import type { GameId } from '../../design-system/hexablock';
+import type { GameId, Mood } from '../../design-system/hexablock';
 import type { ResultButton, ResultSpec } from '../overlays/Result';
 import type { Juice } from './juice';
 
@@ -23,6 +23,11 @@ export interface GameShell {
   end(spec: Omit<ResultSpec, 'secondary'> & { secondary?: ResultButton; celebrate?: boolean }, delayMs?: number): void;
   /** Efectos de la partida (pedacitos, puntos, combo, sacudida, confeti). */
   juice: Juice;
+  /**
+   * Humor de Hexi en la esquina. Sin `ms` cambia el humor de base (feliz o nervioso);
+   * con `ms` es una reacción que vuelve al de base después de ese tiempo.
+   */
+  mood(m: Mood, ms?: number): void;
   /** Vuelve a jugar tras el resultado (SEGUIR en Merge). */
   reopen(): void;
   actions: { again(): void; next(): void; map(): void; levels(): void };

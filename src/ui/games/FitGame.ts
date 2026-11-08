@@ -97,7 +97,12 @@ export function createFit(shell: GameShell): GameController {
     color: s => engine.state.pieces[s].color,
     ghost: (s, px) => ghostPiece(geometry, shapeOf(s), engine.state.pieces[s].color, px),
     canPlace: (s, a) => engine.isValid({ type: 'place', piece: s, anchor: a }),
-    place: (s, a) => { if (play({ type: 'place', piece: s, anchor: a })) sfx('place'); },
+    place: (s, a) => {
+      if (!play({ type: 'place', piece: s, anchor: a })) return;
+      sfx('place');
+      // Hexi: se sorprende con una pieza grande, se alegra al encajar
+      shell.mood(engine.state.pieces[s].cells.length >= 4 ? 'sorpresa' : 'feliz', 900);
+    },
     onSelect: (s, again) => {
       if (engine.state.pieces[s].placedAt !== null) { placement.select(null); return; }
       if (again && shell.isActive()) rotate(s);

@@ -72,6 +72,10 @@ export function createLines(shell: GameShell): GameController {
     const points = events.reduce((a, e) => a + (e.type === 'score' ? e.points : 0), 0);
     placed.forEach(k => before.set(k, color));
     shell.juice.points(board, placed, points);
+    // Hexi: celebra un combo, se alegra al limpiar, se sorprende con una pieza grande
+    if (cleared && cleared.lines >= 2) shell.mood('celebra', 1300);
+    else if (cleared) shell.mood('feliz', 900);
+    else if (placed.length >= 4) shell.mood('sorpresa', 900);
     display = before;
     cheer(placed);
     render();
@@ -83,6 +87,9 @@ export function createLines(shell: GameShell): GameController {
     const finish = () => {
       display = engine.state.board;
       render();
+      // nervioso cuando queda menos de un cuarto del tablero libre
+      const free = display.keys().filter(k => display.get(k) === null).length;
+      shell.mood(free < display.size * 0.25 ? 'nervioso' : 'feliz');
       recordLines(engine.state.score, engine.state.maxCombo);
       drawHud();
       if (engine.status === 'lost') {
