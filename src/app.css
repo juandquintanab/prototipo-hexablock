@@ -79,6 +79,8 @@ body { display: flex; justify-content: center; }
 
 /* Partida */
 .game { padding: max(var(--space-3), env(safe-area-inset-top)) var(--space-4) max(var(--space-4), env(safe-area-inset-bottom)); touch-action: none; overscroll-behavior: contain; }
+/* La partida usa .hx-screen para la escena de fondo (bundle.css), pero a pantalla completa. */
+.scr.game.hx-screen { width: auto; max-width: none; border-radius: 0; overflow: hidden; }
 .game__top:empty, .game__sub:empty { display: none; }
 .game__top { margin-bottom: var(--space-3); }
 .game__sub { margin-top: var(--space-1); display: flex; }

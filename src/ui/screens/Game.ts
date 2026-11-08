@@ -1,3 +1,4 @@
+import * as H from '../../design-system/hexablock';
 import type { GameId } from '../../design-system/hexablock';
 import { LEVEL_COUNT } from '../../app/progress';
 import { sfx } from '../../infra/audio';
@@ -20,7 +21,8 @@ export function GameScreen(r: Extract<Route, { name: 'game' }>): Screen {
   const game = r.game;
   const level = r.level ?? 1;
   const leveled = game === 'fit' || game === 'sort';
-  const s = el(`<section class="scr game hx-screen--${game}">
+  const s = el(`<section class="scr game hx-screen hx-screen--${game}">
+    ${H.scene(game)}
     <div class="game__top" data-top></div>
     <div class="hx-hud">
       ${iconBtn('pause', t('pause'), 'hx-ibtn--round', 'data-pause')}
