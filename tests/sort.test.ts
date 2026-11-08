@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { key } from '../src/domain/hex';
 import { SortRules, SortState, sortStars } from '../src/domain/games/sort/SortRules';
+import { GameEngine } from '../src/domain/GameEngine';
 
 function emptyState(): { rules: SortRules; s: SortState } {
   const rules = new SortRules(11);
@@ -81,6 +82,22 @@ describe('SortRules', () => {
     expect(sortStars(10, 2)).toBe(3);
     expect(sortStars(15, 2)).toBe(2);
     expect(sortStars(16, 2)).toBe(1);
+  });
+
+  it('should_start_level_1_and_accept_a_move_when_played_through_the_engine', () => {
+    // Arrange
+    const engine = new GameEngine(new SortRules(2024));
+    engine.start(1);
+    const empty = engine.state.board.keys().find(k => engine.state.board.get(k).length === 0)!;
+    const placed = [...engine.state.tray[0]!];
+    // Act
+    const ok = engine.play({ slot: 0, key: empty });
+    // Assert
+    expect(ok).toBe(true);
+    expect(engine.state.moves).toBe(1);
+    expect(engine.state.tray[0]).toBeNull();
+    expect(engine.state.board.get(empty)).toEqual(placed);
+    expect(engine.status).toBe('playing');
   });
 
   it('should_generate_stacks_of_2_to_6_when_tray_refills', () => {
