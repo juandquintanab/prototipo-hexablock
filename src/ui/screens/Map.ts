@@ -24,11 +24,24 @@ function art(): string {
   let s = '';
   // fondo extendido para que llene cualquier alto/ancho sin franjas
   s += '<rect x="-400" y="-600" width="1160" height="1400" style="fill:var(--sky)"/>';
-  s += '<ellipse cx="70" cy="60" rx="34" ry="12" style="fill:var(--panel)"/><ellipse cx="96" cy="52" rx="22" ry="12" style="fill:var(--panel)"/><ellipse cx="290" cy="90" rx="30" ry="10" style="fill:var(--panel)"/>';
+  // mapa vivo (WorldMap/preview): nubes que cruzan despacio y pájaros volando
+  ([[40, 60, 1, 0], [200, 96, 0.8, -14], [120, 140, 0.6, -26]] as const).forEach(([x, y, k, d]) => {
+    s += `<g class="hx-cloud" style="animation-delay:${d}s"><ellipse cx="${x}" cy="${y}" rx="${34 * k}" ry="${12 * k}" style="fill:var(--panel)"/>` +
+      `<ellipse cx="${x + 22 * k}" cy="${y - 8 * k}" rx="${20 * k}" ry="${12 * k}" style="fill:var(--panel)"/></g>`;
+  });
+  ([[70, 0], [96, -6], [84, -11]] as const).forEach(([y, d]) => {
+    s += `<g class="hx-bird" style="animation-delay:${d}s"><path d="M0 ${y} q6 -6 12 0 q6 -6 12 0" fill="none" stroke-width="2.5" stroke-linecap="round" style="stroke:var(--ink)"/></g>`;
+  });
   s += '<path d="M-400 200 L-120 120 L-20 200 L60 110 L130 190 L200 100 L290 180 L380 120 L470 190 L760 120 L760 230 L-400 230 Z" style="fill:var(--hill)"/>';
   s += '<path d="M-400 200 C -100 160, 80 150, 180 150 C 280 150, 460 160, 760 200 L760 900 L-400 900 Z" style="fill:var(--grass)"/>';
   s += '<path d="M-400 430 C 120 400, 240 440, 760 400 L760 900 L-400 900 Z" style="fill:var(--grass-700);opacity:.35"/>';
   PATH.forEach(p => { s += `<polygon points="${H.pts(H.ngon(6, 11, p[0], p[1], 0))}" style="fill:var(--panel-tan)"/>`; });
+  // carrito con una ficha que recorre el camino de piedras de un mundo a otro
+  const route = 'M' + PATH.map(p => `${p[0]} ${p[1]}`).join(' L');
+  s += `<g class="hx-cart"><animateMotion dur="26s" repeatCount="indefinite" path="${route}"/><g transform="translate(-10 -20)">` +
+    '<circle cx="5" cy="17" r="3.2" style="fill:var(--ink)"/><circle cx="15" cy="17" r="3.2" style="fill:var(--ink)"/>' +
+    '<rect x="0" y="6" width="20" height="10" rx="3" style="fill:var(--wood-500)"/>' +
+    `<polygon points="${H.pts(H.ngon(6, 6.5, 10, 2, -Math.PI / 2))}" style="fill:var(--piece-teal)"/></g></g>`;
   (Object.keys(POS) as H.GameId[]).forEach(id => {
     const p = POS[id];
     const name = t(`world.${id}`);
