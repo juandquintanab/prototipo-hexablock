@@ -36,7 +36,7 @@ export function createMerge(shell: GameShell): GameController {
     const light = v < 64 || v >= 2048;
     return {
       color: `merge-${Math.min(v, 2048)}`,
-      html: `<text x="${c.x}" y="${c.y}" text-anchor="middle" dominant-baseline="central" style="font-family:var(--font-display);font-size:${H.f(fs)}px;fill:var(--${light ? 'ink' : 'white'})">${v}</text>`,
+      html: `<text x="${c.x}" y="${c.y}" text-anchor="middle" dominant-baseline="central" style="font-family:var(--font-display);font-variant-numeric:lining-nums;font-size:${H.f(fs)}px;fill:var(--${light ? 'ink' : 'white'})">${v}</text>`,
     };
   };
 

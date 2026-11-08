@@ -405,11 +405,11 @@ export function curtain(host: HTMLElement, mid?: () => void): void {
 /* Logo tipo pegatina. */
 export function logo(o: { width?: number } = {}): string {
   const w = o.width || 320;
-  const txt = (cls: string, dy: number) => '<text x="190" y="' + (80 + dy) + '" text-anchor="middle" textLength="340" lengthAdjust="spacingAndGlyphs" class="' + cls + '" style="font-family:var(--font-display);font-size:60px;paint-order:stroke;stroke-linejoin:round">HexaBlock</text>';
+  const txt = (cls: string, dy: number) => '<text x="190" y="' + (80 + dy) + '" text-anchor="middle" textLength="340" lengthAdjust="spacingAndGlyphs" class="' + cls + '" style="font-family:var(--font-display);font-weight:400;font-variant-numeric:lining-nums;font-size:60px;paint-order:stroke;stroke-linejoin:round">HexaBlock</text>';
   return '<svg class="hx-logo" width="' + w + '" height="' + f(w * 156 / 380) + '" viewBox="0 0 380 156" role="img" aria-label="HexaBlock Suite">' +
     txt('hx-logo__shadow', 7) + txt('hx-logo__face', 0) +
     '<g transform="translate(190 122) rotate(-3)"><polygon points="-78,-15 78,-15 70,0 78,15 -78,15 -70,0" style="fill:var(--ribbon-700)" transform="translate(0 4)"/><polygon points="-78,-15 78,-15 70,0 78,15 -78,15 -70,0" style="fill:var(--ribbon-500)"/>' +
-    '<text x="0" y="1" text-anchor="middle" dominant-baseline="central" style="font-family:var(--font-display);font-size:20px;letter-spacing:.3em;fill:var(--white)">SUITE</text></g></svg>';
+    '<text x="0" y="1" text-anchor="middle" dominant-baseline="central" style="font-family:var(--font-display);font-weight:400;font-variant-numeric:lining-nums;font-size:20px;letter-spacing:.3em;fill:var(--white)">SUITE</text></g></svg>';
 }
 
 /* Íconos de trazo, 24px, color = currentColor. */

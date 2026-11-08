@@ -15,7 +15,7 @@ function worldSign(x: number, y: number, title: string, stars: number): string {
   const h = 54, fs = title.length > 12 ? 13 : 15;
   let s = `<g transform="translate(${x} ${y})"><rect x="0" y="3" width="124" height="${h}" rx="8" style="fill:var(--wood-700)"/><rect x="0" y="0" width="124" height="${h}" rx="8" style="fill:var(--wood-500)"/>` +
     `<rect x="5" y="5" width="114" height="${h - 10}" rx="5" style="fill:var(--panel)"/>` +
-    `<text x="62" y="19" text-anchor="middle" dominant-baseline="central" style="font-family:var(--font-display);font-size:${fs}px;fill:var(--ink)">${esc(title)}</text>`;
+    `<text x="62" y="19" text-anchor="middle" dominant-baseline="central" style="font-family:var(--font-display);font-variant-numeric:lining-nums;font-size:${fs}px;fill:var(--ink)">${esc(title)}</text>`;
   for (let i = 0; i < 3; i++) s += `<g transform="translate(${37 + i * 17} ${29 - (i === 1 ? 2 : 0)})">${H.star(i < stars, 16)}</g>`;
   return s + '</g>';
 }

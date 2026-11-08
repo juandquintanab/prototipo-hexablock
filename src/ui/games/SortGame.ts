@@ -42,7 +42,7 @@ export function createSort(shell: GameShell): GameController {
     const ty = g.y - DEPTH * 0.4 - (st.length - 1) * LAYER;
     return {
       html: layers(base, 0) + `<g class="stack-run">${layers(top, base.length)}` +
-        `<text x="${g.x}" y="${ty}" text-anchor="middle" dominant-baseline="central" style="font-family:var(--font-display);font-size:${H.f(board.fontSize(0.65))}px;fill:var(--ink)">${run}</text></g>`,
+        `<text x="${g.x}" y="${ty}" text-anchor="middle" dominant-baseline="central" style="font-family:var(--font-display);font-variant-numeric:lining-nums;font-size:${H.f(board.fontSize(0.65))}px;fill:var(--ink)">${run}</text></g>`,
     };
   };
 
