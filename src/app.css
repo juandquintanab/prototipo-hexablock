@@ -15,10 +15,15 @@ body { display: flex; justify-content: center; }
 
 /* Inicio */
 .home { align-items: center; justify-content: space-between; padding: max(var(--space-7), env(safe-area-inset-top)) var(--space-4) max(var(--space-6), env(safe-area-inset-bottom)); cursor: pointer; }
-.home > :not(.ground-art) { position: relative; z-index: 1; }
-.home__logo { text-align: center; margin-top: var(--space-6); animation: hx-drop var(--dur-sign) var(--ease-bounce) both; }
-.home__title { margin: 0; color: var(--ink); }
-.home__suite { margin-top: var(--space-2); color: var(--ink); }
+.home > :not(.ground-art):not(.home__falling) { position: relative; z-index: 1; }
+.home__logo { margin: var(--space-6) 0 0; width: 100%; display: grid; place-items: center; animation: hx-drop var(--dur-sign) var(--ease-bounce) both; }
+/* Logo pegatina: el ancho de la pantalla menos 32 px, máximo 360 px (Logo README). */
+.home__logo .hx-logo { width: min(100%, 360px); height: auto; display: block; }
+.home__falling { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+.home__fall { position: absolute; top: -40px; animation: home-fall linear infinite; }
+.home__fall .hx-shape { display: block; }
+@keyframes home-fall { from { transform: translateY(0) rotate(0deg); } to { transform: translateY(110vh) rotate(240deg); } }
+@media (prefers-reduced-motion: reduce) { .home__fall { display: none; } }
 .home__hexi { display: grid; place-items: center; }
 .home__cta { display: grid; justify-items: center; gap: var(--space-3); }
 
