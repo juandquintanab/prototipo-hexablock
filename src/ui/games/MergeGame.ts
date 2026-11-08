@@ -46,7 +46,7 @@ export function createMerge(shell: GameShell): GameController {
     if (pop) board.animate([pop], 'hx-anim-pop');
     const st = engine.state;
     shell.setCenter(t('points'), st.score, t('bestN', { n: H.fmt(Math.max(bestOf('merge'), st.score)) }));
-    nextEl.innerHTML = H.shape({ sides: geometry.sides, size: 56, color: 'cell-slot' }) + H.mergeTile(st.next, { size: 44, sides: geometry.sides });
+    nextEl.innerHTML = H.mergeTile(st.next, { size: 44, sides: geometry.sides });
     undoBtn.disabled = !engine.canUndo;
   }
 

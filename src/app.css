@@ -87,7 +87,9 @@ body { display: flex; justify-content: center; }
 .hud-right { min-width: 52px; display: flex; justify-content: flex-end; }
 .hud-pair { display: flex; gap: 6px; }
 .hud-spacer { width: 52px; }
-.game .hx-hud__score { min-width: 0; flex: 1; }
+/* Letrerito de madera del HUD (bundle.css): ancho propio y centrado entre pausa y controles, como en GameScreen/preview. */
+.game .hx-hud { align-items: center; }
+.game .hx-hud__score { flex: 0 1 auto; min-width: 128px; max-width: 60%; }
 .game__board { position: relative; flex: 1; min-height: 0; display: grid; place-items: center; padding: var(--space-3) 0; }
 .board-view { width: 100%; height: 100%; touch-action: none; }
 .board-view .hx-board { display: block; width: 100%; height: 100%; overflow: visible; }
@@ -104,7 +106,8 @@ body { display: flex; justify-content: center; }
 .hx-tray__slot.is-selected { box-shadow: inset 0 0 0 3px var(--ink); transform: translateY(-3px); }
 .hx-tray__slot.is-dragging { opacity: .25; }
 .tray-label { flex-basis: 100%; text-align: center; }
-.tile-slot { display: grid; place-items: center; }
+/* La próxima ficha de Merge va sobre un círculo trim para que no se pierda sobre el crema (GameScreen). */
+.tile-slot { display: grid; place-items: center; width: 56px; height: 56px; border-radius: 50%; background: var(--trim); }
 .tile-slot > svg { grid-area: 1 / 1; display: block; }
 .drag-ghost { position: fixed; left: 0; top: 0; z-index: 100; pointer-events: none; filter: drop-shadow(0 8px 14px #00000024); }
 .drag-ghost svg { display: block; }
