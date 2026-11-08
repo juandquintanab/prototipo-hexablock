@@ -76,13 +76,20 @@ Regla de oro: **`domain/` no importa nada de `ui/` ni de `infra/`**. La UI escuc
 La carpeta `design-system/` trae:
 - `tokens.json` y `tokens.css`: todos los colores, espaciados, radios, sombras, labios, duraciones y curvas como variables CSS.
 - `components/bundle.css`: las clases `hx-*` de todos los componentes y las animaciones (`@keyframes`).
-- `components/bundle.js`: helpers de dibujo en `window.HexaBlock` (tablero, ficha, pila, ficha de Merge, estrella, mascota, título arqueado, íconos, figuritas del mapa, conteo animado). **Pórtalo a un módulo TypeScript** (`hexablock.ts`) con los mismos nombres; no cambies su dibujo.
+- `components/bundle.js`: helpers de dibujo en `window.HexaBlock`. **Pórtalo a un módulo TypeScript** (`hexablock.ts`) con los mismos nombres; no cambies su dibujo. Incluye:
+  - Dibujo: `board({..., base: true, faces: true})` (tablero sobre plataforma de piedra, fichas con cara), `piece`, `stack`, `mergeTile`, `shape({face})`, `face(cx, cy, R, mood)`, `prism` (con brillo `sheen` y sombra de contacto), `star`, `mascot({mood})` con humores `feliz`, `celebra`, `triste`, `sorpresa` y `nervioso`, `arch`, `icon`, `landmark(id)`, `scene(id)`, `logo()`.
+  - Efectos (WAAPI, respetan reducir movimiento): `burst` (pedacitos), `floatText` (+puntos), `combo` (texto pegatina), `shake`, `confetti`, `curtain` (cortina de hexágonos), `countUp` (conteo con espacio fino de miles).
 - `README.md`: la guía de marca. Léela.
 - `components/<Nombre>/README.md` y `preview.html`: guía y ejemplo vivo de cada componente. Úsalos como referencia exacta de marcado y comportamiento (WorldMap, Signboard, GameScreen, AchievementRow, ShapeCatalog, Motion…).
 
 Reglas visuales que no se negocian:
-- **Plano**, como Dumb Ways to Die. Fichas, estrellas, niveles, fichas de Merge y mascota: formas planas de un color, sin lateral. **Relieve solo** en botones (labio `sun-600`), letreros y bandejas de madera (`wood-700`) y **pilas de Hexa Sort**.
-- **Tipografía**: `Young Serif` (`--font-display`) para títulos, botones, números, nombres de zona e instrucciones; `Gelasio` (`--font-text`) para textos y etiquetas. Etiquetas en MAYÚSCULAS con peso normal, nunca en negrita espaciada. Nunca negrita sintética en Young Serif (`font-synthesis: none`).
+- **Plano, pero con vida**, como Dumb Ways to Die. Fichas, estrellas, niveles, fichas de Merge y mascota: formas planas de un color, sin lateral, con **brillo** (`sheen`) arriba y **sombra de contacto** (`shade`) debajo. Las fichas de Lines, Fit y Sort tienen **cara** (parpadean; alegría al encajar, susto cuando su línea va a explotar). El tablero va sobre una **plataforma de piedra** (`stone-*`, `board({base:true})`). **Relieve completo solo** en botones (labio `sun-600`), madera (`wood-700`) y **pilas de Hexa Sort**.
+- **Escenas y jugo**: cada partida va sobre su escena (`Scene`); cada acción tiene respuesta (`Effects`); las transiciones grandes usan la cortina (`Transition`); Hexi reacciona en la partida (ver `GameScreen`).
+- **Tipografía (importante)**: **una sola letra, `Young Serif`** (`--font-display`), para todo: títulos, botones, números, etiquetas, cintas, HUD, estrellas, logros y textos cortos. `Gelasio` (`--font-text`) **solo** en párrafos de más de una línea, con la clase `.hx-prose`. Reglas:
+  - Números **siempre alineados**: `font-variant-numeric: lining-nums` (en el HUD además `tabular-nums`). Ojo: el atajo `font:` lo reinicia, así que ponlo **después** de cada `font:`. Sin esto, Young Serif dibuja números de estilo antiguo ("8 192" bailando) que parecen de otra letra.
+  - Miles con espacio fino (` `): `8 192`.
+  - Un solo peso; `font-synthesis: none` (nunca negrita sintética). Etiquetas en MAYÚSCULAS con `caps`, nunca en negrita.
+  - Aplícalo también al texto dentro de los SVG (`<text>`).
 - Botones amarillos con texto `sun-ink` (no blanco).
 - Una acción principal amarilla por pantalla.
 - Cada juego es dueño de un color: `game-lines` (naranja), `game-fit` (menta), `game-sort` (rosa), `game-merge` (azul); su `-bg` es el fondo de la partida.
@@ -101,11 +108,12 @@ Ajustes y Logros se abren desde el mapa; Pausa desde la partida; Catálogo desde
 ```
 
 ### 4.1 Inicio
-- Logo "HexaBlock" en `display-xl` con "Suite" debajo, Hexi (mascota, humor `feliz`, viva) y botón **JUGAR** ("TOCA PARA JUGAR" como etiqueta).
+- Logo pegatina (`logo()`, ver `Logo`), Hexi (mascota, humor `feliz`, viva) y botón **JUGAR** ("TOCA PARA JUGAR" como etiqueta).
+- Inicio → Mapa y Mapa → Partida pasan por la cortina de hexágonos (`curtain`).
 - El primer toque desbloquea el audio (requisito del navegador) y va al mapa.
 
 ### 4.2 Mapa de mundos
-Ver `components/WorldMap/preview.html`. Igual que ahí, **sin** la zona en construcción ni su cinta.
+Ver `components/WorldMap/preview.html`. Igual que ahí (mapa vivo: nubes, pájaros, carrito por el camino, figuritas animadas con sombra), **sin** la zona en construcción ni su cinta.
 - Isla con camino de piedras hexagonales, de abajo hacia arriba: **Estación Línea** (Lines), **La Colmena** (Fit), **Pilópolis** (Sort), **Fuente Fusión** (Merge). Cada una con su figurita animada (`landmark(id)`) y letrero con nombre y estrellas de la zona (sección 9.2).
 - Hexi al inicio del camino.
 - Arriba: contador de estrellas totales (izquierda), botones **Logros** (trofeo) y **Ajustes** (engranaje) (derecha).
@@ -131,7 +139,10 @@ Pantalla completa con el fondo del juego, el verbo enorme entrando de lado y el 
 | Merge | ¡Fusiona! / Merge! | DESLIZA Y JUNTA IGUALES / SWIPE AND JOIN TWINS |
 
 ### 4.6 Partida
-Estructura común (ver `GameScreen`): **HUD** arriba (pausa redonda a la izquierda, dato central, controles extra a la derecha), **tablero** al centro, **bandeja** de madera abajo. Detalle por juego en la sección 6.
+Estructura común (ver `GameScreen`): **escena** del mundo de fondo (`scene(id)`), **HUD** arriba (pausa redonda a la izquierda, dato central en un **letrero de madera** `hx-hud__score`, controles extra a la derecha), **tablero sobre piedra** al centro, **bandeja** de madera abajo y **Hexi** en una esquina.
+- Hexi reacciona: `sorpresa` al colocar algo grande, `feliz` al limpiar/encajar/fusionar, `nervioso` cuando queda poco espacio, `celebra` en combo o victoria, `triste` en derrota.
+- Jugo: `burst` en las celdas que se limpian o fusionan, `floatText` con los puntos, `combo` ("¡Doble!", "¡Triple!") en combos, `shake` suave en combo ≥ 3, `confetti` en victoria, `countUp` en puntajes.
+Detalle por juego en la sección 6.
 
 ### 4.7 Pausa
 Letrero "Pausa": **CONTINUAR** (principal), **REINICIAR**, **MAPA** (o **NIVELES** en Fit/Sort) y los interruptores de sonido y música.
@@ -148,7 +159,7 @@ Letrero con postes y banderines (ver `Signboard`):
 Letrero "Ajustes" (ver `Settings`): Sonido (interruptor), Música (interruptor), Idioma (ES/EN), Figuras (botón al catálogo). Atrás → mapa.
 
 ### 4.10 Catálogo de figuras
-Ver `ShapeCatalog`. Dos filas: **Tablero** (triángulo, cuadrado, hexágono) y **Ficha** (3 a 10 lados), vista previa del tablero y Hexi con la figura elegida. Se guarda la elección. Nota visible en etiqueta: "En esta versión se juega con hexágonos". **No afecta los juegos ni la mascota fuera de esta pantalla.**
+Ver `ShapeCatalog` como referencia visual, pero con **una sola fila "Figura"**: triángulo, cuadrado, pentágono y hexágono. La figura elegida aplica **a la vez al tablero y a las fichas** (el tablero es de la misma figura que la ficha). El pentágono usa el teselado de El Cairo y lleva la etiqueta "Solo Sort y Fit". Vista previa del tablero y Hexi con la figura elegida. Se guarda la elección. Nota visible en etiqueta: "En esta versión se juega con hexágonos". **No afecta los juegos ni la mascota fuera de esta pantalla.**
 
 ### 4.11 Logros
 Letrero "Logros" con encabezados "EN PROGRESO" y "COMPLETADOS" y filas `AchievementRow` (sección 9.3).
@@ -287,14 +298,14 @@ Un color de ficha distinto por pieza.
 
 ## 8. Catálogo de figuras (solo apariencia, sin efecto)
 
-Guarda `{ board: 'tri'|'square'|'hex', pieceSides: 3..10 }`. Por defecto `hex` y 6. Al elegir tablero, la ficha vuelve a su figura natural (3, 4, 6). La vista previa del catálogo sí cambia (usa `board()` del sistema). **El resto de la app sigue en hexágono.** Deja el dato guardado y un comentario `// TODO: conectar geometría (Factory Method) y forma de ficha (Strategy)` donde se conectaría.
+Guarda `{ figure: 'tri'|'square'|'pent'|'hex' }`. Por defecto `hex`. Tablero y ficha siempre usan la misma figura. El pentágono usa el teselado de El Cairo (agrega su geometría junto a `tri`, `square` y `hex` en `cellGeom`). La vista previa del catálogo sí cambia (usa `board()` del sistema). **El resto de la app sigue en hexágono.** Deja el dato guardado y un comentario `// TODO: conectar geometría (Factory Method) y forma de ficha (Strategy)` donde se conectaría.
 
 ## 9. Progreso, estrellas y logros
 
 ### 9.1 Guardado (`localStorage`, clave `hexablock-proto-v1`, todo con try/catch)
 ```json
 { "settings": { "sound": true, "music": true, "lang": "es" },
-  "shape": { "board": "hex", "pieceSides": 6 },
+  "shape": { "figure": "hex" },
   "best": { "lines": 0, "merge": 0, "mergeMaxTile": 0 },
   "fit":  { "stars": [0,0,0,0,0,0] },
   "sort": { "stars": [0,0,0,0,0,0] },
@@ -348,6 +359,8 @@ Nombres `should_<resultado>_when_<condición>`, patrón Arrange-Act-Assert. Mín
 - [ ] Al recargar, el progreso sigue ahí.
 - [ ] Catálogo de figuras visible, elección guardada, sin efecto en los juegos.
 - [ ] Animaciones de la sección 3 presentes; nada bloquea más de `dur-sign`.
+- [ ] Partidas con escena, tablero sobre piedra, fichas con cara y brillo, Hexi reaccionando y efectos (pedacitos, puntos, combo, confeti).
+- [ ] Una sola tipografía (Young Serif) en HUD, cintas, estrellas, letreros y botones; números alineados en todos lados (sin números que suben y bajan).
 - [ ] `domain/` sin imports de `ui/` o `infra/`; pruebas en verde (`npm test`).
 - [ ] `npm run build` genera un sitio estático que funciona desplegado.
 

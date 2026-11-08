@@ -13,6 +13,8 @@ Cada mundo tiene una figurita (`HexaBlock.landmark(id)`) que cuenta su mecánica
 | En construcción | Quinta variante | Grúa, conos y cinta de precaución | El lugar reservado para un juego nuevo |
 
 Comportamiento:
+- El mapa está vivo: nubes que cruzan despacio, pájaros volando y un carrito con una ficha que recorre el camino de piedras de un mundo a otro.
+- Cada figurita se apoya en una sombra de contacto; la fuente tiene destellos que titilan.
 - Cada figurita tiene una animación propia y constante: el tren avanza y echa humo, la abeja zumba, los chorros laten, la ficha 2048 flota, el gancho de la grúa se mece.
 - Tocar un mundo lo levanta y hace caer el letrero de la zona desde abajo: nombre del mundo arqueado, nombre del juego, estrellas, cinta con "Tu mejor" (Lines, Merge) o "Niveles" (Fit, Sort) y JUGAR.
 - La mascota espera al inicio del camino. Arriba: contador de estrellas y ajustes.

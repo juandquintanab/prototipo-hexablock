@@ -21,13 +21,16 @@ function sign(x, y, title, stars) {
 }
 /* fondo: cielo, nubes, montañas, isla */
 S += '<rect width="360" height="700" style="fill:var(--sky)"/>';
-S += '<ellipse cx="70" cy="60" rx="34" ry="12" style="fill:var(--panel)"/><ellipse cx="96" cy="52" rx="22" ry="12" style="fill:var(--panel)"/><ellipse cx="290" cy="90" rx="30" ry="10" style="fill:var(--panel)"/>';
+[[40, 60, 1, 0], [200, 96, .8, -14], [120, 140, .6, -26]].forEach(function (c) { S += '<g class="hx-cloud" style="animation-delay:' + c[3] + 's"><ellipse cx="' + c[0] + '" cy="' + c[1] + '" rx="' + 34 * c[2] + '" ry="' + 12 * c[2] + '" style="fill:var(--panel)"/><ellipse cx="' + (c[0] + 22 * c[2]) + '" cy="' + (c[1] - 8 * c[2]) + '" rx="' + 20 * c[2] + '" ry="' + 12 * c[2] + '" style="fill:var(--panel)"/></g>'; });
+[[70, 0], [96, -6], [84, -11]].forEach(function (b) { S += '<g class="hx-bird" style="animation-delay:' + b[1] + 's"><path d="M0 ' + b[0] + ' q6 -6 12 0 q6 -6 12 0" fill="none" stroke-width="2.5" stroke-linecap="round" style="stroke:var(--ink)"/></g>'; });
 S += '<path d="M-20 200 L60 110 L130 190 L200 100 L290 180 L380 120 L380 230 L-20 230 Z" style="fill:var(--hill)"/>';
 S += '<path d="M-10 190 C 80 150, 280 140, 370 180 L370 710 L-10 710 Z" style="fill:var(--grass)"/>';
 S += '<path d="M-10 420 C 120 400, 240 440, 370 400 L370 710 L-10 710 Z" style="fill:var(--grass-700);opacity:.35"/>';
 /* camino de piedras hexagonales */
 var path = [[200, 676], [226, 640], [205, 604], [250, 572], [262, 520], [214, 476], [160, 466], [115, 444], [96, 400], [130, 366], [185, 350], [240, 330], [262, 290], [236, 252], [180, 236], [130, 214], [104, 180]];
 path.forEach(function (p) { S += '<polygon points="' + H.pts(H.ngon(6, 11, p[0], p[1], 0)) + '" style="fill:var(--panel-tan)"/>'; });
+var d = 'M' + path.map(function (p) { return p[0] + ' ' + p[1]; }).join(' L');
+S += '<g class="hx-cart"><animateMotion dur="26s" repeatCount="indefinite" path="' + d + '"/><g transform="translate(-10 -20)"><circle cx="5" cy="17" r="3.2" style="fill:var(--ink)"/><circle cx="15" cy="17" r="3.2" style="fill:var(--ink)"/><rect x="0" y="6" width="20" height="10" rx="3" style="fill:var(--wood-500)"/><polygon points="' + H.pts(H.ngon(6, 6.5, 10, 2, -Math.PI / 2)) + '" style="fill:var(--piece-teal)"/></g></g>';
 /* mundos */
 Object.keys(POS).forEach(function (id) {
   var p = POS[id], g = H.GAMES.filter(function (x) { return x.id === id; })[0];
@@ -59,6 +62,6 @@ map.querySelectorAll('.hx-map__world').forEach(function (w) { w.addEventListener
 
 /* figuritas sueltas */
 var lm = document.getElementById('lm');
-['lines', 'fit', 'sort', 'merge', 'build'].forEach(function (id) { var g = H.GAMES.filter(function (x) { return x.id === id; })[0]; lm.insertAdjacentHTML('beforeend', '<div class="hx-col" style="gap:4px">' + H.landmark(id, 120) + '<span style="font:400 17px/1.1 var(--font-display)">' + (g ? g.world : 'En construcción') + '</span><span class="hx-label">' + (g ? g.name : 'Quinta variante') + '</span></div>'); });
+['lines', 'fit', 'sort', 'merge', 'build'].forEach(function (id) { var g = H.GAMES.filter(function (x) { return x.id === id; })[0]; lm.insertAdjacentHTML('beforeend', '<div class="hx-col" style="gap:4px">' + H.landmark(id, 120) + '<span style="font:400 17px/1.1 var(--font-display);font-variant-numeric:lining-nums">' + (g ? g.world : 'En construcción') + '</span><span class="hx-label">' + (g ? g.name : 'Quinta variante') + '</span></div>'); });
 </script>
 </body></html>

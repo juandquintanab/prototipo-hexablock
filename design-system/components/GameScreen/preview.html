@@ -1,23 +1,43 @@
-<!-- @dsCard group="Tablero" height=1040 -->
+<!-- @dsCard group="Tablero" height=1260 -->
 <!doctype html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GameScreen</title></head>
 <body style="margin:0">
 <div class="hx" style="padding:16px">
-
 <div class="hx-row" style="justify-content:center;align-items:flex-start;gap:16px" id="r"></div>
 </div>
 <script>
-var H = window.HexaBlock;
+var H = window.HexaBlock, P = H.PIECES, r = document.getElementById('r');
+function hud(center, right) { return '<div class="hx-hud"><button class="hx-ibtn hx-ibtn--round" aria-label="Pausa">' + H.icon('pause', 24) + '</button><div class="hx-hud__score">' + center + '</div>' + right + '</div>'; }
+function screen(game, inner, mood) {
+  r.insertAdjacentHTML('beforeend', '<div class="hx-screen hx-screen--' + game + '" style="width:300px;min-height:560px;display:grid;gap:12px;align-content:start;position:relative">' + H.scene(game) + inner +
+    '<div style="position:absolute;right:6px;bottom:96px;z-index:2">' + H.mascot({ mood: mood, size: 56 }) + '</div></div>');
+}
+var undo = '<div class="hx-row" style="gap:6px"><button class="hx-ibtn hx-ibtn--sm" aria-label="Deshacer">' + H.icon('undo', 22) + '</button><button class="hx-ibtn hx-ibtn--sm" aria-label="Rehacer">' + H.icon('redo', 22) + '</button></div>';
+var none = '<div style="width:52px"></div>';
+function tray(inner) { return '<div class="hx-tray"><div class="hx-tray__in">' + inner + '</div></div>'; }
 
-var P=H.PIECES,r=document.getElementById('r');
-function hud(left,center,right){return '<div class="hx-hud"><button class="hx-ibtn hx-ibtn--round" aria-label="Pausa">'+H.icon('pause',24)+'</button><div class="hx-hud__score">'+center+'</div>'+right+'</div>';}
-function screen(game,inner){r.insertAdjacentHTML('beforeend','<div class="hx-screen hx-screen--'+game+'" style="width:300px;display:grid;gap:14px">'+inner+'</div>');}
-var undo='<div class="hx-row" style="gap:6px"><button class="hx-ibtn hx-ibtn--sm" aria-label="Deshacer">'+H.icon('undo',22)+'</button><button class="hx-ibtn hx-ibtn--sm" aria-label="Rehacer">'+H.icon('redo',22)+'</button></div>';
-var none='<div style="width:52px"></div>';
-screen('lines',hud('','<small>Puntos</small><b>4 820</b><small>Mejor 8 192</small>',none)+H.board({geo:'hex',size:4,cell:15,fill:function(c,i){return (i*7)%5===0?P[i%8]:null;}})+'<div class="hx-tray"><div class="hx-tray__in">'+H.piece({cells:[[0,0],[1,0]],color:'piece-teal',cell:10})+H.piece({cells:[[0,0],[1,0],[2,0]],color:'piece-blue',cell:10})+H.piece({cells:[[0,0],[0,1],[1,0]],color:'piece-pink',cell:10})+'</div></div>');
-screen('fit','<div class="hx-timer is-running"><div class="hx-timer__fill"></div></div>'+hud('','<small>Nivel 12</small><b>2 / 5</b><small>piezas</small>',undo)+H.board({geo:'hex',size:2,cell:22,fill:function(c,i){return ['0,0','1,0','0,1'].indexOf(c.key)>=0?'piece-blue':['-1,1','-1,0'].indexOf(c.key)>=0?'piece-orange':null;}})+'<div class="hx-tray"><div class="hx-tray__in">'+H.piece({cells:[[0,0],[1,0],[2,0]],color:'piece-green',cell:10})+H.piece({cells:[[0,0],[0,1]],color:'piece-purple',cell:10})+'</div></div>');
-screen('sort',hud('','<small>Nivel 5</small><b>2 / 6</b><small>metas</small>',none)+'<div class="hx-progress"><div class="hx-progress__fill" style="width:33%"></div><span>Metas 2 / 6</span></div>'+H.board({geo:'hex',size:2,cell:22,depth:5,fill:function(c,i){return i%3===0?P[(i*3)%8]:null;},content:function(c,i,d){if(i%6) return '';var p=H.piecePoly(c,6,'hex',d).map(function(q){return[q[0],q[1]-6]});return H.prism(p,P[(i+2)%8],d)+H.prism(p.map(function(q){return[q[0],q[1]-6]}),P[(i+2)%8],d);}})+'<div class="hx-tray"><div class="hx-tray__in"><span class="hx-label">Siguiente</span>'+H.stack(['piece-green','piece-green','piece-pink'],{size:44})+'</div></div>');
-var vals={'0,0':64,'1,0':32,'-1,0':8,'0,1':4,'1,-1':2,'-2,2':128,'2,-2':16};
-screen('merge',hud('','<small>Puntos</small><b>2 048</b><small>Mejor 8 192</small>',undo)+H.board({geo:'hex',size:2,cell:24,fill:function(c){return vals[c.key]?'merge-'+vals[c.key]:null;},content:function(c,i,d){var v=vals[c.key];return '<text x="'+c.x+'" y="'+(c.y-d*.4)+'" text-anchor="middle" dominant-baseline="central" style="font-family:var(--font-display);font-weight:400;font-size:'+(v>99?15:18)+'px;fill:'+(v>=64?'var(--white)':'var(--ink)')+'">'+v+'</text>';}})+'<div class="hx-tray"><div class="hx-tray__in"><span class="hx-label">Nueva ficha</span>'+H.mergeTile(2,{size:40})+H.mergeTile(4,{size:40})+'</div></div>');
+screen('lines', hud('<small>Puntos</small><b>4 820</b><small>Mejor 8 192</small>', none) +
+  H.board({ geo: 'hex', size: 4, cell: 14, base: true, faces: function (c, i) { return i % 5 === 0 ? 'scared' : 'idle'; }, fill: function (c, i) { return (i * 7) % 5 === 0 || c.r === 1 && c.q < 3 ? P[i % 8] : null; } }) +
+  tray(H.piece({ cells: [[0, 0], [1, 0]], color: 'piece-teal', cell: 10 }) + H.piece({ cells: [[0, 0], [1, 0], [2, 0]], color: 'piece-blue', cell: 10 }) + H.piece({ cells: [[0, 0], [0, 1], [1, 0]], color: 'piece-pink', cell: 10 })), 'sorpresa');
+
+screen('fit', '<div class="hx-timer is-running"><div class="hx-timer__fill"></div></div>' + hud('<small>Nivel 12</small><b>2 / 5</b><small>piezas</small>', undo) +
+  H.board({ geo: 'hex', size: 2, cell: 22, base: true, faces: true, fill: function (c) { return ['0,0', '1,0', '0,1'].indexOf(c.key) >= 0 ? 'piece-blue' : ['-1,1', '-1,0'].indexOf(c.key) >= 0 ? 'piece-orange' : null; } }) +
+  tray(H.piece({ cells: [[0, 0], [1, 0], [2, 0]], color: 'piece-green', cell: 10 }) + H.piece({ cells: [[0, 0], [0, 1]], color: 'piece-purple', cell: 10 })), 'feliz');
+
+var piles = { '0,0': ['piece-blue', 'piece-blue', 'piece-pink'], '1,-1': ['piece-green', 'piece-green'], '-1,1': ['piece-pink', 'piece-pink', 'piece-pink', 'piece-yellow'], '0,-2': ['piece-purple', 'piece-purple', 'piece-purple', 'piece-purple', 'piece-purple'], '2,0': ['piece-orange'], '-2,1': ['piece-teal', 'piece-teal', 'piece-teal'], '1,1': ['piece-red', 'piece-red'], '-1,-1': ['piece-yellow', 'piece-blue'] };
+screen('sort', hud('<small>Nivel 5</small><b>2 / 6</b><small>metas</small>', none) + '<div class="hx-progress"><div class="hx-progress__fill" style="width:33%"></div><span style="position:relative">Metas 2 / 6</span></div>' +
+  H.board({ geo: 'hex', size: 2, cell: 22, base: true, depth: 4, fill: function (c) { return piles[c.key] ? piles[c.key][0] : null; },
+    content: function (c, i, d) { var st = piles[c.key], s = ''; for (var k = 1; k < st.length; k++) { var p = H.piecePoly(c, 6, 'hex', d).map(function (q) { return [q[0], q[1] - 5 * k]; }); s += H.prism(p, st[k], d, '', { flat: k < st.length - 1 }); }
+      var top = H.piecePoly(c, 6, 'hex', d), cy = 0; top.forEach(function (q) { cy += q[1]; }); cy = cy / 6 - 5 * (st.length - 1);
+      var run = 1; for (var k2 = st.length - 2; k2 >= 0 && st[k2] === st[st.length - 1]; k2--) run++;
+      return s + '<text x="' + c.x + '" y="' + cy + '" text-anchor="middle" dominant-baseline="central" style="font-family:var(--font-display);font-size:15px;font-variant-numeric:lining-nums;fill:var(--ink)">' + run + '</text>'; } }) +
+  tray('<span class="hx-label">Siguiente</span>' + H.stack(['piece-green', 'piece-green', 'piece-pink'], { size: 44, face: true })), 'nervioso');
+
+var vals = { '0,0': 64, '1,0': 32, '-1,0': 8, '0,1': 4, '1,-1': 2, '-2,2': 128, '2,-2': 16 };
+screen('merge', hud('<small>Puntos</small><b>2 048</b><small>Mejor 8 192</small>', undo) +
+  H.board({ geo: 'hex', size: 2, cell: 24, base: true, fill: function (c) { return vals[c.key] ? 'merge-' + vals[c.key] : null; },
+    content: function (c, i, d) { var v = vals[c.key]; return '<text x="' + c.x + '" y="' + c.y + '" text-anchor="middle" dominant-baseline="central" style="font-family:var(--font-display);font-variant-numeric:lining-nums;font-size:' + (v > 99 ? 16 : 20) + 'px;fill:' + (v >= 64 ? 'var(--white)' : 'var(--ink)') + '">' + v + '</text>'; } }) +
+  tray('<span class="hx-label">Nueva ficha</span><span style="display:grid;place-items:center;width:52px;height:52px;border-radius:50%;background:var(--trim)">' + H.mergeTile(2, { size: 40 }) + '</span>'), 'celebra');
+document.querySelectorAll('.hx-mascot').forEach(function (m) { m.classList.add('is-alive'); });
 </script>
 </body></html>

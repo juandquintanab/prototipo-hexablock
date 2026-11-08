@@ -1,0 +1,15 @@
+<!-- @dsCard group="Movimiento" height=470 -->
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Transition</title></head>
+<body style="margin:0">
+<div class="hx" style="padding:16px;display:grid;gap:14px;justify-items:center">
+  <div class="hx-screen" id="stage" style="width:300px;height:380px;padding:0;background:var(--sky)"></div>
+  <button class="hx-btn" id="go">Cambiar pantalla</button>
+</div>
+<script>
+var H = window.HexaBlock, st = document.getElementById('stage'), i = 0, ids = ['lines', 'fit', 'sort', 'merge'];
+function paint() { var g = H.GAMES[i % 4]; st.className = 'hx-screen hx-screen--' + g.id; st.innerHTML = H.scene(g.id) + '<div style="position:absolute;inset:0;display:grid;place-items:center"><span class="hx-instruction__verb">' + g.verb + '</span></div>'; }
+paint();
+document.getElementById('go').onclick = function () { H.curtain(st, function () { i++; paint(); }); };
+</script>
+</body></html>

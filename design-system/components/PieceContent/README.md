@@ -2,6 +2,7 @@
 
 Lo que lleva una celda en cada juego. Es lo que varía entre variantes (el `TCell` del motor genérico), dibujado siempre con la misma ficha plana:
 
+- Todas las fichas llevan una zona clara arriba y, salvo Merge, cara (`face`).
 - **Lines: color.** Ocho colores `piece-*`, elegidos para distinguirse también por luminosidad.
 - **Fit: pieza.** Todas las celdas de una pieza comparten color; el color identifica la pieza.
 - **Sort: pila.** La única con relieve: fichas apiladas con `HexaBlock.stack(colores)`, 6px de altura por ficha y lateral `shade`. Se lee la cima.

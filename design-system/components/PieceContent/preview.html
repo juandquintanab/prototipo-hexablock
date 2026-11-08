@@ -11,10 +11,10 @@ var H = window.HexaBlock;
 
 var r=document.getElementById('r'),P=H.PIECES;
 function card(game,title,inner){r.insertAdjacentHTML('beforeend','<div class="hx-screen hx-screen--'+game+'" style="width:200px;display:grid;justify-items:center;align-content:start;gap:10px"><div class="hx-label" style="color:var(--ink)">'+title+'</div>'+inner+'</div>');}
-card('lines','Lines · color',H.board({geo:'hex',size:2,cell:13,fill:function(c,i){return i%3? P[i%8]:null;}}));
+card('lines','Lines · color',H.board({geo:'hex',size:2,cell:13,base:true,faces:true,fill:function(c,i){return i%3? P[i%8]:null;}}));
 var ids={};[[0,0,1],[1,0,1],[1,-1,1],[-1,1,6],[0,1,6],[-1,0,6],[0,-1,3],[1,1,3],[-1,2,2],[2,-1,2]].forEach(function(x){ids[x[0]+','+x[1]]=P[x[2]];});
-card('fit','Fit · pieza',H.board({geo:'hex',size:2,cell:13,fill:function(c){return ids[c.key]||null;}}));
-card('sort','Sort · pila','<div class="hx-row" style="gap:6px;justify-content:center">'+H.stack(['piece-blue','piece-blue','piece-pink','piece-pink','piece-pink'],{size:48})+H.stack(['piece-green','piece-yellow','piece-yellow'],{size:48})+H.stack(['piece-purple','piece-purple','piece-purple','piece-purple','piece-purple','piece-purple','piece-purple'],{size:48})+'</div>');
+card('fit','Fit · pieza',H.board({geo:'hex',size:2,cell:13,base:true,faces:true,fill:function(c){return ids[c.key]||null;}}));
+card('sort','Sort · pila','<div class="hx-row" style="gap:6px;justify-content:center">'+H.stack(['piece-blue','piece-blue','piece-pink','piece-pink','piece-pink'],{size:48,face:true})+H.stack(['piece-green','piece-yellow','piece-yellow'],{size:48})+H.stack(['piece-purple','piece-purple','piece-purple','piece-purple','piece-purple','piece-purple','piece-purple'],{size:48})+'</div>');
 var t='';[2,4,8,16,32,64,128,256,512,1024,2048].forEach(function(v){t+=H.mergeTile(v,{size:50});});
 card('merge','Merge · número','<div style="display:flex;flex-wrap:wrap;gap:2px;justify-content:center">'+t+'</div>');
 </script>

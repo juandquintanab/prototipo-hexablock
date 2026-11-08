@@ -11,7 +11,7 @@
 var H = window.HexaBlock;
 
 var m=document.getElementById('moods');
-[['feliz','Feliz · mapa y menús'],['celebra','Celebra · victoria'],['sorpresa','Sorpresa · combo'],['triste','Triste · derrota']].forEach(function(x){m.insertAdjacentHTML('beforeend','<div class="hx-col">'+H.mascot({mood:x[0],size:104})+'<div class="hx-label" style="color:var(--ink)">'+x[1]+'</div></div>');});
+[['feliz','Feliz · mapa y menús'],['celebra','Celebra · victoria'],['sorpresa','Sorpresa · combo'],['nervioso','Nervioso · casi lleno'],['triste','Triste · derrota']].forEach(function(x){m.insertAdjacentHTML('beforeend','<div class="hx-col">'+H.mascot({mood:x[0],size:104})+'<div class="hx-label" style="color:var(--ink)">'+x[1]+'</div></div>');});
 var s=document.getElementById('shapes');for(var n=3;n<=10;n++) s.insertAdjacentHTML('beforeend',H.mascot({sides:n,size:72,color:['piece-red','piece-orange','sun-400','piece-green','piece-teal','piece-blue','piece-purple','piece-pink'][n-3]}));
 document.querySelectorAll('.hx-mascot').forEach(function(e){e.classList.add('is-alive');});
 </script>

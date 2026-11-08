@@ -12,7 +12,7 @@ var H = window.HexaBlock;
 
 var P=H.PIECES,r=document.getElementById('r');
 [['hex','Hexágono · 6 vecinas','lines'],['square','Cuadrado · 4 vecinas','merge'],['tri','Triángulo · 3 vecinas','fit']].forEach(function(g,j){
- var b=H.board({geo:g[0],size:2,cell:g[0]==='tri'?17:g[0]==='square'?15:17,fill:function(c,i){return (i*5+j)%4===0?P[(i*3+j)%8]:null;}});
+ var b=H.board({geo:g[0],size:2,base:true,faces:true,cell:g[0]==='tri'?17:g[0]==='square'?15:17,fill:function(c,i){return (i*5+j)%4===0?P[(i*3+j)%8]:null;}});
  r.insertAdjacentHTML('beforeend','<div class="hx-col"><div class="hx-screen hx-screen--'+g[2]+'" style="width:230px;padding:18px">'+b+'</div><div class="hx-label">'+g[1]+'</div></div>');});
 function one(kind){var c=H.cellGeom('hex',0,0,24),d=5,p,svg='';
  if(kind==='vacía') svg='<polygon points="'+H.pts(c.poly.map(function(q){return[q[0]*.9,q[1]*.9]}))+'" style="fill:var(--cell-slot)"/>';

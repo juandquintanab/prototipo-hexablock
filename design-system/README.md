@@ -32,13 +32,15 @@ Cambios deliberados frente a la referencia:
 
 Ilustración del mapa: `sky`, `grass` y `hill` en planos sin degradados.
 
-**Plano, como la referencia.** Fichas, estrellas, niveles y mascota son formas planas de un solo color, sin contorno ni lateral. El relieve se reserva para dos cosas: los objetos que se tocan o enmarcan (botones con su labio `sun-600`, letreros y tarjetas con su grosor `wood-700`) y las **pilas de Hexa Sort**, donde la altura es información: cada ficha apilada muestra su lateral con `shade`. Al presionar un botón, baja lo que mide su labio (`lip-md`). Las sombras difusas (`shadow-sign`, `shadow-soft`) solo van bajo letreros y tarjetas que flotan.
+**Plano, pero con vida.** Fichas, estrellas, niveles, fichas de Merge y mascota son formas planas de un color, con dos detalles que les dan volumen sin romper lo plano: una segunda zona clara arriba (`sheen`) y una sombra de contacto debajo (`shade`). Las fichas de Lines, Fit y Sort tienen **cara**: ojitos que parpadean a destiempo, alegría al encajar o fusionarse y susto cuando su línea va a explotar. El tablero se apoya en una **plataforma de piedra** (`stone-*`) con grosor y huecos hundidos. El relieve completo se reserva para botones (labio `sun-600`), madera (`wood-700`) y las **pilas de Hexa Sort**. Las sombras difusas (`shadow-sign`, `shadow-soft`) solo van bajo letreros y tarjetas que flotan.
 
-**Tipografía.** Dos serif, como en Dumb Ways to Die 2:
-- **Young Serif** (Google Fonts) para todo lo que se lee de lejos: títulos de letrero, botones, números, nombres de zona e instrucciones. Es una serif gruesa de estilo antiguo, la más cercana libre a la letra de los letreros de la referencia. Tiene un solo peso; no se le aplica negrita sintética.
-- **Gelasio** (Google Fonts) para el texto corrido y las etiquetas: filas de logros, listas, HUD y subtítulos. Las etiquetas van en MAYÚSCULAS con peso normal y espaciado mínimo (`caps`), como "JOIN THE STRANDS" en la referencia; nunca en negrita con letras separadas.
+**Escenas y jugo.** Cada partida ocurre dentro de su mundo (componente Scene): capas planas en el color del juego con algo que se mueve lento. Cada acción tiene respuesta (componente Effects): pedacitos que saltan, puntos que suben, textos de combo tipo pegatina, sacudida y confeti. Entre pantallas grandes, una cortina de hexágonos (Transition). Hexi acompaña la partida desde una esquina y reacciona.
 
-Escala en los estilos `display-*`, `score-*`, `title`, `button`, `body`, `small` y `caps`.
+**Tipografía.** Una sola voz, como en Dumb Ways to Die 2: **Young Serif** (Google Fonts) para todo el juego: títulos de letrero, botones, números, etiquetas, cintas, HUD, logros y nombres. Es una serif gruesa de estilo antiguo, la más cercana libre a la letra de la referencia. Reglas:
+- **Números siempre alineados** (`font-variant-numeric: lining-nums`, ya activado en `bundle.css` después de cada `font:`; los números del HUD además con ancho fijo). Sin esto, Young Serif usa números de estilo antiguo que suben y bajan de la línea y parecen de otra letra.
+- Un solo peso; nunca negrita sintética (`font-synthesis: none`).
+- Etiquetas en MAYÚSCULAS con un poco de espaciado (`caps`), nunca en negrita.
+- **Gelasio** (`--font-text`, clase `.hx-prose`) solo para párrafos de más de una línea, como la descripción de un letrero.
 
 **Forma.** Esquinas `radius-sm` en filas, `radius-md` en paneles, `radius-lg` en marcos, `radius-pill` en botones y contadores. El hexágono es el motivo de marca: cresta del letrero, niveles, mascota y portada.
 
@@ -70,5 +72,5 @@ Todo se mueve: lo que entra rebota (`ease-bounce`), lo que sale acelera (`ease-i
 ## Cómo usarlo en el prototipo
 
 1. Carga `tokens.css`, `components/bundle.css` (incluye la fuente) y `components/bundle.js` (define `window.HexaBlock`).
-2. Envuelve la app en un elemento con clase `hx`.
+2. Envuelve la app en un elemento con clase `hx` (pone Young Serif y los números alineados).
 3. Arma pantallas con las clases `hx-*` de cada componente y dibuja tableros, fichas, estrellas y la mascota con los helpers de `HexaBlock`.

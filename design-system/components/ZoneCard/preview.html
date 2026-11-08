@@ -11,7 +11,7 @@ var H = window.HexaBlock;
 
 var r=document.getElementById('r');var P=H.PIECES;
 H.GAMES.forEach(function(g,i){
- var b=H.board({geo:'hex',size:2,cell:9,fill:function(c,k){return (k*7+i*3)%5<2?P[(k+i)%8]:null;}});
+ var b=H.board({geo:'hex',size:2,cell:9,base:true,fill:function(c,k){return (k*7+i*3)%5<2?P[(k+i)%8]:null;}});
  r.insertAdjacentHTML('beforeend','<div class="hx-zone hx-zone--'+g.id+'" tabindex="0"><div class="hx-zone__in"><div class="hx-zone__name">'+g.name.replace('Hexa ','')+'</div><div class="hx-stars">'+H.star(true,22)+H.star(i<2,26)+H.star(false,22)+'</div>'+b+'<div class="hx-zone__best">Mejor '+['4 820','12','5','8 192'][i]+'</div></div></div>');});
 r.insertAdjacentHTML('beforeend','<div class="hx-zone hx-zone--locked"><div class="hx-zone__in"><div class="hx-zone__name">¿?</div><div style="color:var(--disabled-ink)">'+H.icon('lock',40)+'</div><div class="hx-caution"><span>EN CONSTRUCCIÓN</span></div></div></div>');
 </script>

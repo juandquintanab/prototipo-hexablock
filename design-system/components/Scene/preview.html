@@ -1,0 +1,12 @@
+<!-- @dsCard group="Escenas" height=460 -->
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Scene</title></head>
+<body style="margin:0">
+<div class="hx" style="padding:16px"><div class="hx-row" style="justify-content:center;gap:12px" id="r"></div></div>
+<script>
+var H = window.HexaBlock, r = document.getElementById('r');
+H.GAMES.forEach(function (g) {
+  r.insertAdjacentHTML('beforeend', '<div class="hx-col" style="gap:6px"><div class="hx-screen hx-screen--' + g.id + '" style="width:180px;height:380px;padding:0">' + H.scene(g.id) + '</div><span style="font:400 16px/1 var(--font-display);font-variant-numeric:lining-nums">' + g.world + '</span></div>');
+});
+</script>
+</body></html>

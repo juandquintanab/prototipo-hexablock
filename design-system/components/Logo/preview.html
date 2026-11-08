@@ -1,0 +1,22 @@
+<!-- @dsCard group="Marca" height=380 -->
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Logo</title>
+<style>
+.fall { position: absolute; top: -40px; animation: fall linear infinite; }
+@keyframes fall { from { transform: translateY(0) rotate(0deg); } to { transform: translateY(420px) rotate(240deg); } }
+@media (prefers-reduced-motion: reduce) { .fall { animation: none; display: none; } }
+</style></head>
+<body style="margin:0">
+<div class="hx" style="padding:16px">
+  <div class="hx-screen" id="stage" style="width:100%;max-width:520px;height:330px;margin:auto;background:var(--sky);display:grid;place-items:center;padding:0;overflow:hidden">
+    <div id="pieces" style="position:absolute;inset:0"></div>
+    <div style="position:relative;display:grid;justify-items:center;gap:6px" id="logo"></div>
+  </div>
+</div>
+<script>
+var H = window.HexaBlock, p = document.getElementById('pieces');
+for (var i = 0; i < 14; i++) p.insertAdjacentHTML('beforeend', '<span class="fall" style="left:' + (i * 7.3) % 96 + '%;animation-duration:' + (5 + (i * 1.7) % 4) + 's;animation-delay:-' + (i * 0.9) + 's">' + H.shape({ sides: 6, size: 30 + (i * 5) % 18, color: H.PIECES[i % 8], face: i % 3 === 0 }) + '</span>');
+document.getElementById('logo').innerHTML = H.logo({ width: 340 }) + H.mascot({ size: 80, mood: 'feliz' });
+document.querySelector('.hx-mascot').classList.add('is-alive');
+</script>
+</body></html>
