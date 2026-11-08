@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { boardGeometry } from '../src/domain/geometry/GeometryFactory';
 import { HexBoard } from '../src/domain/HexBoard';
 import { Dir, HexKey, hexagonKeys, key } from '../src/domain/hex';
 import { MergeRules, MergeState, slide } from '../src/domain/games/merge/MergeRules';
@@ -6,7 +7,7 @@ import { GameEngine } from '../src/domain/GameEngine';
 import { SeededRandom } from '../src/domain/random';
 
 function boardWith(values: Record<string, number>): HexBoard<number> {
-  const b = new HexBoard<number>(hexagonKeys(2), () => 0);
+  const b = new HexBoard<number>(boardGeometry('hex', 2), () => 0);
   for (const [k, v] of Object.entries(values)) b.set(k as HexKey, v);
   return b;
 }

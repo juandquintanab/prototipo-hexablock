@@ -1,5 +1,6 @@
-import { DIRECTIONS, Direction, HexKey, add, hexagonKeys, keyOf, parse, sOf } from '../../hex';
 import { HexBoard } from '../../HexBoard';
+import { boardGeometry } from '../../geometry/GeometryFactory';
+import type { CellKey, Direction, IGridGeometry } from '../../geometry/IGridGeometry';
 import type { GameEvent, GameStatus, IGameRules } from '../../ports';
 import { SeededRandom } from '../../random';
 
@@ -23,24 +24,33 @@ export const MERGE_GOAL = 2048;
 
 interface SlideResult { board: HexBoard<MergeCell>; events: GameEvent[]; gained: number; changed: boolean }
 
-/** Desliza todas las fichas en una dirección. Función pura sobre una copia. */
+/** Pasos que faltan para salir del tablero en esa dirección (0 = la más avanzada). */
+function distanceToEdge(g: IGridGeometry, k: CellKey, dir: Direction): number {
+  let n = 0;
+  for (let c = g.step(k, dir); c !== null; c = g.step(c, dir)) n++;
+  return n;
+}
+
+/** Desliza todas las fichas en una dirección de la geometría. Función pura sobre una copia. */
 export function slide(source: HexBoard<MergeCell>, dir: Direction): SlideResult {
   const board = source.clone();
-  const d = DIRECTIONS[dir];
-  const ds = sOf(d);
-  // la más avanzada en esa dirección primero (producto con coordenadas cúbicas)
-  const progress = (k: HexKey) => { const c = parse(k); return c.q * d.q + c.r * d.r + sOf(c) * ds; };
-  const order = board.keys().filter(k => board.get(k) !== 0).sort((a, b) => progress(b) - progress(a));
-  const merged = new Set<HexKey>();
+  const g = board.geometry;
+  const empty: SlideResult = { board, events: [], gained: 0, changed: false };
+  if (!g.directions().includes(dir)) return empty;
+  // la más avanzada en esa dirección primero
+  const order = board.keys().filter(k => board.get(k) !== 0)
+    .map(k => ({ k, d: distanceToEdge(g, k, dir) }))
+    .sort((a, b) => a.d - b.d)
+    .map(x => x.k);
+  const merged = new Set<CellKey>();
   const events: GameEvent[] = [];
   let gained = 0, changed = false;
 
   for (const from of order) {
     const value = board.get(from);
     let at = from;
-    for (;;) {
-      const nk = keyOf(add(parse(at), d));
-      if (!board.has(nk)) break;
+    let didMerge = false;
+    for (let nk = g.step(at, dir); nk !== null; nk = g.step(at, dir)) {
       const other = board.get(nk);
       if (other === 0) { at = nk; continue; }
       if (other === value && !merged.has(nk)) {
@@ -49,12 +59,11 @@ export function slide(source: HexBoard<MergeCell>, dir: Direction): SlideResult 
         merged.add(nk);
         gained += value * 2;
         events.push({ type: 'moved', from, to: nk }, { type: 'merged', key: nk, value: value * 2 });
-        changed = true;
-        at = '' as HexKey;
+        changed = didMerge = true;
       }
       break;
     }
-    if (at && at !== from) {
+    if (!didMerge && at !== from) {
       board.set(from, 0);
       board.set(at, value);
       events.push({ type: 'moved', from, to: at });
@@ -66,12 +75,12 @@ export function slide(source: HexBoard<MergeCell>, dir: Direction): SlideResult 
 
 export class MergeRules implements IGameRules<MergeCell, MergeMove, MergeState> {
   readonly undoLimit = 1;
-  constructor(private readonly seed: number) {}
+  constructor(private readonly seed: number, private readonly geometry: IGridGeometry = boardGeometry('hex', MERGE_RADIUS)) {}
 
   init(): MergeState {
     const rng = new SeededRandom(this.seed);
     const state: MergeState = {
-      board: new HexBoard<MergeCell>(hexagonKeys(MERGE_RADIUS), () => 0),
+      board: new HexBoard<MergeCell>(this.geometry, () => 0),
       score: 0, maxTile: 0, next: 0, rng, keepPlaying: false,
     };
     state.next = this.rollValue(rng);
@@ -98,8 +107,7 @@ export class MergeRules implements IGameRules<MergeCell, MergeMove, MergeState> 
 
   status(state: MergeState): GameStatus {
     if (state.maxTile >= MERGE_GOAL && !state.keepPlaying) return 'won';
-    for (let d = 0; d < 6; d++) if (slide(state.board, d as Direction).changed) return 'playing';
-    return 'lost';
+    return state.board.geometry.directions().some(d => slide(state.board, d).changed) ? 'playing' : 'lost';
   }
 
   /** SEGUIR tras el 2048. */
@@ -111,8 +119,9 @@ export class MergeRules implements IGameRules<MergeCell, MergeMove, MergeState> 
 
   /** Coloca la ficha "next" en una celda vacía al azar y sortea la siguiente. */
   private spawn(state: MergeState): GameEvent | null {
-    const empty = state.board.keys().filter(k => state.board.get(k) === 0);
-    state.maxTile = Math.max(state.maxTile, ...state.board.keys().map(k => state.board.get(k)));
+    const keys = state.board.keys();
+    state.maxTile = Math.max(state.maxTile, ...keys.map(k => state.board.get(k)));
+    const empty = keys.filter(k => state.board.get(k) === 0);
     if (!empty.length) return null;
     const k = state.rng.pick(empty);
     const value = state.next;

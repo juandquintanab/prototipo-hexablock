@@ -1,48 +1,51 @@
-import { HexCoord, HexKey, fromPixel, key } from '../../domain/hex';
+import type { CellKey, Point } from '../../domain/geometry/IGridGeometry';
 import { BoardView, centroid } from './BoardView';
 
 export interface PlacementConfig {
   board: BoardView;
   /** Contenedor con los elementos [data-slot]. */
   tray: HTMLElement;
-  /** Celdas relativas de la pieza del hueco, o null si no hay pieza. */
-  offsets(slot: number): HexCoord[] | null;
+  /** Celdas de la pieza del hueco (en una posición cualquiera; la primera es la referencia), o null. */
+  cells(slot: number): CellKey[] | null;
   /** Color para la vista previa válida. */
   color(slot: number): string;
-  /** SVG del "fantasma" al tamaño de celda en pantalla, centrado en su centroide. */
-  ghost(slot: number, cellPx: number): string;
-  canPlace(slot: number, anchor: HexKey): boolean;
-  place(slot: number, anchor: HexKey): void;
+  /** SVG del "fantasma" a la escala del tablero en pantalla, centrado en su centroide. */
+  ghost(slot: number, scalePx: number): string;
+  canPlace(slot: number, anchor: CellKey): boolean;
+  place(slot: number, anchor: CellKey): void;
   /** Se tocó una pieza; again = ya estaba seleccionada (Fit la gira). */
   onSelect?(slot: number, again: boolean): void;
   /** Toque en el tablero sin nada seleccionado (Fit quita la pieza). */
-  onBoardTap?(k: HexKey): void;
+  onBoardTap?(k: CellKey): void;
   /** Error (sonido de inválido). */
   onInvalid?(): void;
   enabled(): boolean;
+  /**
+   * La pieza ocupa una sola celda y va en cualquiera (pilas de Sort): el ancla es la celda bajo el punto,
+   * sin traslación. Sin esto, en triángulos y pentágonos solo servirían las celdas de la misma orientación.
+   */
+  anyCell?: boolean;
 }
 
 const LIFT_TOUCH = 56; // la pieza se levanta sobre el dedo
 const DRAG_START = 6;
 
-/** Arrastrar o tocar para colocar piezas (Lines, Sort, Fit). Pointer events: mouse y toque. */
+/** Arrastrar o tocar para colocar piezas (Lines, Sort, Fit) en cualquier geometría. Pointer events: mouse y toque. */
 export class PlacementController {
   private selected: number | null = null;
-  private drag: { slot: number; id: number; x0: number; y0: number; started: boolean; touch: boolean; ghost?: HTMLElement; anchor?: HexKey | null; src: HTMLElement } | null = null;
+  private drag: { slot: number; id: number; x0: number; y0: number; started: boolean; touch: boolean; ghost?: HTMLElement; anchor?: CellKey | null; src: HTMLElement } | null = null;
   private cleanup: (() => void)[] = [];
 
   constructor(private cfg: PlacementConfig) {
-    const tray = cfg.tray;
-    const boardEl = cfg.board.el;
     const on = <K extends keyof HTMLElementEventMap>(t: HTMLElement | Window, ev: K, fn: (e: HTMLElementEventMap[K]) => void) => {
       t.addEventListener(ev, fn as EventListener);
       this.cleanup.push(() => t.removeEventListener(ev, fn as EventListener));
     };
-    on(tray, 'pointerdown', e => this.trayDown(e));
+    on(cfg.tray, 'pointerdown', e => this.trayDown(e));
     on(window, 'pointermove', e => this.move(e));
     on(window, 'pointerup', e => this.up(e));
     on(window, 'pointercancel', () => this.cancel());
-    on(boardEl, 'click', e => this.boardTap(e));
+    on(cfg.board.el, 'click', e => this.boardTap(e));
   }
 
   get selection(): number | null { return this.selected; }
@@ -58,23 +61,40 @@ export class PlacementController {
     this.cleanup.forEach(f => f());
   }
 
-  /** Ancla para que el centroide de la pieza quede bajo el punto. */
-  private anchorAt(slot: number, clientX: number, clientY: number): HexKey | null {
-    const offs = this.cfg.offsets(slot);
-    const p = this.cfg.board.toSvg(clientX, clientY);
-    if (!offs || !p) return null;
-    const c = centroid(offs, this.cfg.board.cell);
-    const a = fromPixel(p.x - c.x, p.y - c.y, this.cfg.board.cell);
-    return key(a.q, a.r);
+  /**
+   * Ancla para que el centroide de la pieza quede lo más cerca posible del punto.
+   * Solo vale una celda a la que la geometría pueda trasladar la referencia (en triángulos y pentágonos
+   * no todas sirven), así que se buscan candidatas alrededor y se elige la mejor.
+   */
+  private anchorAt(slot: number, clientX: number, clientY: number): CellKey | null {
+    const cells = this.cfg.cells(slot);
+    const p = this.cfg.board.toGeometry(clientX, clientY);
+    if (!cells || !p) return null;
+    const g = this.cfg.board.geometry;
+    if (this.cfg.anyCell) return g.cellAt(p);
+    const c = centroid(g, cells), r0 = g.center(cells[0]);
+    const guess = g.cellAt({ x: p.x - (c.x - r0.x), y: p.y - (c.y - r0.y) });
+    const ring1 = g.adjacent(guess);
+    const candidates = [guess, ...ring1, ...ring1.flatMap(k => g.adjacent(k))];
+    let best: CellKey | null = null, bestD = Infinity;
+    for (const k of new Set(candidates)) {
+      const moved = g.translate(cells, cells[0], k);
+      if (!moved) continue;
+      const m: Point = centroid(g, moved);
+      const d = (m.x - p.x) ** 2 + (m.y - p.y) ** 2;
+      if (d < bestD) { bestD = d; best = k; }
+    }
+    return best;
   }
 
-  private cellsOf(slot: number, anchor: HexKey): HexKey[] {
-    const [aq, ar] = anchor.split(',').map(Number);
-    return (this.cfg.offsets(slot) ?? []).map(o => key(aq + o.q, ar + o.r));
+  private cellsOf(slot: number, anchor: CellKey): CellKey[] {
+    const cells = this.cfg.cells(slot);
+    if (cells && this.cfg.anyCell) return [anchor];
+    return (cells && this.cfg.board.geometry.translate(cells, cells[0], anchor)) || [];
   }
 
   /** Devuelve true si se dibujó una vista previa sobre el tablero. */
-  private showPreview(slot: number, anchor: HexKey | null): boolean {
+  private showPreview(slot: number, anchor: CellKey | null): boolean {
     const b = this.cfg.board;
     if (!anchor) { b.clearPreview(); return false; }
     const cells = this.cellsOf(slot, anchor);
@@ -88,7 +108,7 @@ export class PlacementController {
     const src = (e.target as HTMLElement).closest<HTMLElement>('[data-slot]');
     if (!src) return;
     const slot = Number(src.dataset.slot);
-    if (!this.cfg.offsets(slot)) return;
+    if (!this.cfg.cells(slot)) return;
     e.preventDefault();
     this.drag = { slot, id: e.pointerId, x0: e.clientX, y0: e.clientY, started: false, touch: e.pointerType !== 'mouse', src };
   }
@@ -101,7 +121,7 @@ export class PlacementController {
       d.started = true;
       const ghost = document.createElement('div');
       ghost.className = 'drag-ghost';
-      ghost.innerHTML = this.cfg.ghost(d.slot, this.cfg.board.screenCell());
+      ghost.innerHTML = this.cfg.ghost(d.slot, this.cfg.board.screenScale());
       document.body.append(ghost);
       d.ghost = ghost;
       d.src.classList.add('is-dragging');
@@ -147,7 +167,7 @@ export class PlacementController {
   private boardTap(e: MouseEvent): void {
     if (!this.cfg.enabled()) return;
     const s = this.selected;
-    if (s !== null && this.cfg.offsets(s)) {
+    if (s !== null && this.cfg.cells(s)) {
       const anchor = this.anchorAt(s, e.clientX, e.clientY);
       if (anchor && this.cfg.canPlace(s, anchor)) {
         this.select(null);

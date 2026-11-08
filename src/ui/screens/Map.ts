@@ -3,7 +3,7 @@ import { totalStars, zoneStars } from '../../app/progress';
 import { t } from '../../infra/i18n';
 import { showZoneSheet } from '../overlays/ZoneSheet';
 import { go, Route, Screen } from '../router';
-import { el, esc, iconBtn } from '../ui';
+import { el, esc, hexi, iconBtn } from '../ui';
 
 /** Posición y escala de cada mundo en el lienzo de 360×700 (de abajo hacia arriba: Lines, Fit, Sort, Merge). */
 const POS: Record<H.GameId, [number, number, number]> = {
@@ -37,7 +37,7 @@ function art(): string {
       `<g transform="translate(${p[0]} ${p[1]}) scale(${p[2]})">${H.LANDMARKS[id]()}</g>` +
       worldSign(p[0] + 6, p[1] + 110 * p[2] + 4, name, zoneStars(id)) + '</g></g>';
   });
-  s += `<g transform="translate(150 620)">${H.mascot({ size: 52 }).replace('class="hx-mascot ', 'class="hx-mascot is-alive ')}</g>`;
+  s += `<g transform="translate(150 620)">${hexi({ size: 52 })}</g>`;
   return s;
 }
 

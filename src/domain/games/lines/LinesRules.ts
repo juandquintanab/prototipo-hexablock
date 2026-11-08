@@ -1,16 +1,18 @@
-import { HexCoord, HexKey, add, hexagonKeys, keyOf, parse } from '../../hex';
 import { HexBoard } from '../../HexBoard';
+import { boardGeometry } from '../../geometry/GeometryFactory';
+import type { CellKey, IGridGeometry } from '../../geometry/IGridGeometry';
 import type { GameEvent, GameStatus, IGameRules, IPieceSource, IScoringPolicy } from '../../ports';
 import { SeededRandom } from '../../random';
-import { LINES_SHAPES } from './shapes';
+import { randomPolyform, randomSize } from './polyforms';
 
 export const LINES_COLORS = ['piece-red', 'piece-orange', 'piece-yellow', 'piece-green', 'piece-teal', 'piece-blue', 'piece-purple', 'piece-pink'] as const;
 export type PieceColor = typeof LINES_COLORS[number];
 
 /** Celda de Lines: el color de la ficha o null. */
 export type LinesCell = PieceColor | null;
-export interface TrayPiece { cells: HexCoord[]; color: PieceColor }
-export interface LinesMove { slot: number; anchor: HexKey }
+/** Pieza de la bandeja: sus celdas en una posición cualquiera; se coloca trasladando cells[0] al ancla. */
+export interface TrayPiece { cells: CellKey[]; color: PieceColor }
+export interface LinesMove { slot: number; anchor: CellKey }
 
 export interface LinesState {
   board: HexBoard<LinesCell>;
@@ -26,15 +28,12 @@ export interface LinesState {
 export const LINES_RADIUS = 4;
 export const TRAY_SIZE = 3;
 
-/** Fuente de piezas al azar según los pesos de la tabla. */
+/** Fuente de piezas: poliformas conexas de 1 a 5 celdas de la geometría del tablero. */
 export class LinesPieceSource implements IPieceSource<TrayPiece> {
-  constructor(private readonly rng: SeededRandom) {}
+  constructor(private readonly rng: SeededRandom, private readonly geometry: IGridGeometry) {}
   next(): TrayPiece {
-    const total = LINES_SHAPES.reduce((a, s) => a + s.weight, 0);
-    let roll = this.rng.next() * total;
-    let shape = LINES_SHAPES[0];
-    for (const s of LINES_SHAPES) { roll -= s.weight; if (roll < 0) { shape = s; break; } }
-    return { cells: shape.cells.map(c => ({ ...c })), color: this.rng.pick(LINES_COLORS) };
+    const cells = randomPolyform(this.geometry, randomSize(this.rng), this.rng);
+    return { cells, color: this.rng.pick(LINES_COLORS) };
   }
 }
 
@@ -48,31 +47,36 @@ export class LinesScoring implements IScoringPolicy<LinesScoreCtx> {
   }
 }
 
-export function cellsAt(anchor: HexKey, offsets: HexCoord[]): HexKey[] {
-  const a = parse(anchor);
-  return offsets.map(o => keyOf(add(a, o)));
+/** Celdas que ocupa la pieza con su primera celda en el ancla (null si la geometría no lo permite). */
+export function cellsAt(g: IGridGeometry, piece: CellKey[], anchor: CellKey): CellKey[] | null {
+  return g.translate(piece, piece[0], anchor);
 }
 
-export function fits(board: HexBoard<LinesCell>, anchor: HexKey, offsets: HexCoord[]): boolean {
-  return cellsAt(anchor, offsets).every(k => board.has(k) && board.get(k) === null);
+export function fits(board: HexBoard<LinesCell>, anchor: CellKey, piece: CellKey[]): boolean {
+  const cells = cellsAt(board.geometry, piece, anchor);
+  return !!cells && cells.every(k => board.has(k) && board.get(k) === null);
 }
 
-export function fitsAnywhere(board: HexBoard<LinesCell>, offsets: HexCoord[]): boolean {
-  return board.keys().some(k => fits(board, k, offsets));
+export function fitsAnywhere(board: HexBoard<LinesCell>, piece: CellKey[]): boolean {
+  return board.keys().some(k => fits(board, k, piece));
 }
 
 export class LinesRules implements IGameRules<LinesCell, LinesMove, LinesState> {
   readonly undoLimit = 0;
   private readonly scoring: IScoringPolicy<LinesScoreCtx>;
 
-  constructor(private readonly seed: number, scoring?: IScoringPolicy<LinesScoreCtx>) {
+  constructor(
+    private readonly seed: number,
+    private readonly geometry: IGridGeometry = boardGeometry('hex', LINES_RADIUS),
+    scoring?: IScoringPolicy<LinesScoreCtx>,
+  ) {
     this.scoring = scoring ?? new LinesScoring();
   }
 
   init(): LinesState {
     const rng = new SeededRandom(this.seed);
     const state: LinesState = {
-      board: new HexBoard<LinesCell>(hexagonKeys(LINES_RADIUS), () => null),
+      board: new HexBoard<LinesCell>(this.geometry, () => null),
       tray: [], score: 0, streak: 0, maxCombo: 0, rng,
     };
     this.refill(state);
@@ -86,13 +90,13 @@ export class LinesRules implements IGameRules<LinesCell, LinesMove, LinesState> 
 
   apply(state: LinesState, move: LinesMove): GameEvent[] {
     const p = state.tray[move.slot]!;
-    const keys = cellsAt(move.anchor, p.cells);
+    const keys = cellsAt(state.board.geometry, p.cells, move.anchor)!;
     keys.forEach(k => state.board.set(k, p.color));
     state.tray[move.slot] = null;
     const events: GameEvent[] = [{ type: 'placed', keys }];
 
     const full = state.board.lines().filter(line => line.every(k => state.board.get(k) !== null));
-    const cleared = new Set<HexKey>();
+    const cleared = new Set<CellKey>();
     full.forEach(line => line.forEach(k => cleared.add(k)));
     const points = this.scoring.score({ placed: keys.length, cleared: cleared.size, lines: full.length, streak: state.streak });
     if (full.length) {
@@ -116,11 +120,11 @@ export class LinesRules implements IGameRules<LinesCell, LinesMove, LinesState> 
   }
 
   clone(s: LinesState): LinesState {
-    return { ...s, board: s.board.clone(), tray: s.tray.map(t => t && { ...t, cells: t.cells.map(c => ({ ...c })) }), rng: s.rng.clone() };
+    return { ...s, board: s.board.clone(), tray: s.tray.map(t => t && { ...t, cells: [...t.cells] }), rng: s.rng.clone() };
   }
 
   private refill(state: LinesState): void {
-    const src = new LinesPieceSource(state.rng);
+    const src = new LinesPieceSource(state.rng, this.geometry);
     state.tray = Array.from({ length: TRAY_SIZE }, () => src.next());
   }
 }

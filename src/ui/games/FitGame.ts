@@ -1,22 +1,22 @@
-import * as H from '../../design-system/hexablock';
-import { HexKey } from '../../domain/hex';
 import { GameEngine } from '../../domain/GameEngine';
-import { FIT_TIME_MS, FitMove, FitRules, fitStars, pieceOffsets } from '../../domain/games/fit/FitRules';
+import type { CellKey } from '../../domain/geometry/IGridGeometry';
+import { FIT_TIME_MS, FitMove, FitRules, fitStars, pieceShape } from '../../domain/games/fit/FitRules';
 import type { GameEvent } from '../../domain/ports';
-import { LEVEL_COUNT, recordLevel } from '../../app/progress';
+import { LEVEL_COUNT, recordLevel, shapeFor } from '../../app/progress';
 import { sfx } from '../../infra/audio';
 import { t } from '../../infra/i18n';
-import { BoardView, ghostPiece } from '../board/BoardView';
+import { BoardView, ghostPiece, pieceSvg } from '../board/BoardView';
 import { PlacementController } from '../board/PlacementController';
 import { iconBtn } from '../ui';
 import type { GameController, GameShell } from './types';
 
 /** Hexa Fit — La Colmena. */
 export function createFit(shell: GameShell): GameController {
-  const engine = new GameEngine(new FitRules());
+  const engine = new GameEngine(new FitRules(shapeFor('fit')));
   engine.start(shell.level);
+  const geometry = engine.state.board.geometry;
 
-  const board = new BoardView(engine.state.board.keys(), { cell: 26 });
+  const board = new BoardView(geometry, { cell: 26 });
   shell.boardWrap.append(board.el);
   shell.boardWrap.insertAdjacentHTML('beforeend', iconBtn('retry', t('rotate'), 'hx-ibtn--sm rotate-btn', 'data-rotate'));
   const rotateBtn = shell.boardWrap.querySelector<HTMLButtonElement>('[data-rotate]')!;
@@ -30,12 +30,13 @@ export function createFit(shell: GameShell): GameController {
   let startedAt = 0, pausedAt = 0, pausedTotal = 0, running = false;
   const elapsed = () => !running ? 0 : (pausedAt || performance.now()) - startedAt - pausedTotal;
 
-  const paint = (k: HexKey) => {
+  const shapeOf = (i: number) => pieceShape(geometry, engine.state.pieces[i]);
+  const paint = (k: CellKey) => {
     const id = engine.state.board.get(k);
     return id === null ? null : { color: engine.state.pieces[id].color };
   };
 
-  function draw(snap: HexKey[] = []): void {
+  function draw(snap: CellKey[] = []): void {
     board.render(paint);
     if (snap.length) board.animate(snap, 'hx-anim-snap');
     const st = engine.state;
@@ -48,7 +49,7 @@ export function createFit(shell: GameShell): GameController {
   function drawTray(): void {
     const sel = placement?.selection ?? null;
     shell.tray.innerHTML = engine.state.pieces.map((p, i) =>
-      `<div class="hx-tray__slot${p.placedAt ? ' is-used' : ''}" data-slot="${i}">${H.piece({ cells: pieceOffsets(p).map(c => [c.q, c.r] as H.Pt), color: p.color, cell: 9 })}</div>`).join('');
+      `<div class="hx-tray__slot${p.placedAt ? ' is-used' : ''}" data-slot="${i}">${pieceSvg(geometry, shapeOf(i), p.color, 8)}</div>`).join('');
     const keep = sel !== null && engine.state.pieces[sel]?.placedAt === null ? sel : null;
     placement?.select(keep);
     rotateBtn.disabled = keep === null;
@@ -83,9 +84,9 @@ export function createFit(shell: GameShell): GameController {
 
   const placement = new PlacementController({
     board, tray: shell.tray,
-    offsets: s => { const p = engine.state.pieces[s]; return p && p.placedAt === null ? pieceOffsets(p) : null; },
+    cells: s => { const p = engine.state.pieces[s]; return p && p.placedAt === null ? shapeOf(s) : null; },
     color: s => engine.state.pieces[s].color,
-    ghost: (s, px) => { const p = engine.state.pieces[s]; return ghostPiece(pieceOffsets(p), p.color, px); },
+    ghost: (s, px) => ghostPiece(geometry, shapeOf(s), engine.state.pieces[s].color, px),
     canPlace: (s, a) => engine.isValid({ type: 'place', piece: s, anchor: a }),
     place: (s, a) => { if (play({ type: 'place', piece: s, anchor: a })) sfx('place'); },
     onSelect: (s, again) => {

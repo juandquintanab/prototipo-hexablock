@@ -1,11 +1,12 @@
 import * as H from '../../design-system/hexablock';
-import { HexKey } from '../../domain/hex';
+import type { CellKey as HexKey } from '../../domain/geometry/IGridGeometry';
+import { boardGeometry } from '../../domain/geometry/GeometryFactory';
 import { HexBoard } from '../../domain/HexBoard';
 import { GameEngine } from '../../domain/GameEngine';
-import { ColorStack, SortRules, sortStars, topRun } from '../../domain/games/sort/SortRules';
+import { ColorStack, SORT_RADIUS, SortRules, sortStars, topRun } from '../../domain/games/sort/SortRules';
 import type { GameEvent } from '../../domain/ports';
 import { freshSeed } from '../../domain/random';
-import { LEVEL_COUNT, addSortGoals, recordLevel } from '../../app/progress';
+import { LEVEL_COUNT, addSortGoals, recordLevel, shapeFor } from '../../app/progress';
 import { sfx } from '../../infra/audio';
 import { t } from '../../infra/i18n';
 import { BoardView } from '../board/BoardView';
@@ -18,10 +19,11 @@ const LAYER = 5;   // altura por ficha (unidades del tablero)
 
 /** Hexa Sort — Pilópolis. */
 export function createSort(shell: GameShell): GameController {
-  const engine = new GameEngine(new SortRules(freshSeed()));
+  const geometry = boardGeometry(shapeFor('sort'), SORT_RADIUS);
+  const engine = new GameEngine(new SortRules(freshSeed(), geometry));
   engine.start(shell.level);
 
-  const board = new BoardView(engine.state.board.keys(), { cell: 26, depth: DEPTH, padTop: 56 });
+  const board = new BoardView(geometry, { cell: 26, depth: DEPTH, padTop: 56 });
   shell.boardWrap.append(board.el);
   shell.hudRight.innerHTML = '<div class="hud-spacer"></div>';
   shell.sub.innerHTML = '<div class="hx-progress"><div class="hx-progress__fill" style="width:0"></div><span data-goals></span></div>';
@@ -35,11 +37,11 @@ export function createSort(shell: GameShell): GameController {
     const run = topRun(st);
     const base = st.slice(0, st.length - run), top = st.slice(st.length - run);
     const layers = (list: string[], from: number) => list.map((c, i) => H.prism(board.poly(k, (from + i) * LAYER), c, DEPTH)).join('');
-    const g = board.geom(k);
+    const g = board.center(k);
     const ty = g.y - DEPTH * 0.4 - (st.length - 1) * LAYER;
     return {
       html: layers(base, 0) + `<g class="stack-run">${layers(top, base.length)}` +
-        `<text x="${g.x}" y="${ty}" text-anchor="middle" dominant-baseline="central" style="font-family:var(--font-display);font-size:14px;fill:var(--ink)">${run}</text></g>`,
+        `<text x="${g.x}" y="${ty}" text-anchor="middle" dominant-baseline="central" style="font-family:var(--font-display);font-size:${H.f(board.fontSize(0.65))}px;fill:var(--ink)">${run}</text></g>`,
     };
   };
 
@@ -52,7 +54,7 @@ export function createSort(shell: GameShell): GameController {
   }
   function drawTray(): void {
     shell.tray.innerHTML = `<span class="hx-label tray-label">${t('nextStack')}</span>` + engine.state.tray.map((p, i) =>
-      `<div class="hx-tray__slot${p ? '' : ' is-used'}" data-slot="${i}">${p ? H.stack(p, { size: 40, layer: 5 }) : ''}</div>`).join('');
+      `<div class="hx-tray__slot${p ? '' : ' is-used'}" data-slot="${i}">${p ? H.stack(p, { size: 40, layer: 5, sides: geometry.sides }) : ''}</div>`).join('');
     placement?.select(null);
   }
 
@@ -138,9 +140,10 @@ export function createSort(shell: GameShell): GameController {
 
   const placement = new PlacementController({
     board, tray: shell.tray,
-    offsets: s => engine.state.tray[s] ? [{ q: 0, r: 0 }] : null,
+    anyCell: true,
+    cells: s => engine.state.tray[s] ? [geometry.origin] : null,
     color: s => engine.state.tray[s]?.slice(-1)[0] ?? 'piece-blue',
-    ghost: (s, px) => H.stack(engine.state.tray[s]!, { size: Math.round(px * 1.75), layer: Math.max(4, Math.round(px * 0.22)) }),
+    ghost: (s, px) => H.stack(engine.state.tray[s]!, { size: Math.round(px * 2 * geometry.inradius * 1.1), layer: Math.max(4, Math.round(px * 0.22)), sides: geometry.sides }),
     canPlace: (s, k) => engine.isValid({ slot: s, key: k }),
     place,
     onInvalid: () => sfx('invalid'),

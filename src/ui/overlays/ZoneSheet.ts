@@ -1,5 +1,5 @@
 import * as H from '../../design-system/hexablock';
-import { LEVEL_COUNT, levelsWon, progress, zoneStars } from '../../app/progress';
+import { LEVEL_COUNT, bestOf, levelsWon, zoneStars } from '../../app/progress';
 import { t } from '../../infra/i18n';
 import { go } from '../router';
 import { el, iconBtn, ribbonHTML, signHTML, starsHTML } from '../ui';
@@ -10,7 +10,7 @@ export function showZoneSheet(parent: HTMLElement, game: H.GameId, onClose: () =
   const leveled = game === 'fit' || game === 'sort';
   const ribbon = leveled
     ? ribbonHTML(t('levels'), `${levelsWon(game)} / ${LEVEL_COUNT}`)
-    : ribbonHTML(t('yourBest'), H.fmt(progress.best[game]));
+    : ribbonHTML(t('yourBest'), H.fmt(bestOf(game)));
   const body = `<div class="hx-label">${g.name}</div>
     ${starsHTML(zoneStars(game))}
     <div style="margin-top:10px">${ribbon}</div>

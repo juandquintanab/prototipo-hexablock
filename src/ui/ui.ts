@@ -1,4 +1,5 @@
 import * as H from '../design-system/hexablock';
+import { currentGeometry } from '../app/progress';
 
 /** Crea un elemento desde HTML (un solo nodo raíz). */
 export function el<T extends HTMLElement = HTMLElement>(html: string): T {
@@ -39,9 +40,9 @@ export function toggleHTML(id: string, label: string, on: boolean): string {
   return `<button class="hx-toggle" role="switch" data-toggle="${id}" aria-checked="${on}" aria-label="${esc(label)}"></button>`;
 }
 
-/** Mascota viva (respira y parpadea). */
-export function hexi(o: Parameters<typeof H.mascot>[0]): string {
-  return H.mascot(o).replace('class="hx-mascot ', 'class="hx-mascot is-alive ');
+/** Mascota viva (respira y parpadea), con la figura elegida en el catálogo. */
+export function hexi(o: Parameters<typeof H.mascot>[0] = {}): string {
+  return H.mascot({ sides: currentGeometry().sides, ...o }).replace('class="hx-mascot ', 'class="hx-mascot is-alive ');
 }
 
 export const wait = (ms: number) => new Promise<void>(r => setTimeout(r, ms));

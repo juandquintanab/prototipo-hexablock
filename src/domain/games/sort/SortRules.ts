@@ -1,5 +1,6 @@
-import { HexKey, hexagonKeys } from '../../hex';
 import { HexBoard } from '../../HexBoard';
+import { boardGeometry } from '../../geometry/GeometryFactory';
+import type { CellKey as HexKey, IGridGeometry } from '../../geometry/IGridGeometry';
 import type { GameEvent, GameStatus, IGameRules, IPieceSource } from '../../ports';
 import { SeededRandom } from '../../random';
 import { SORT_LEVELS, SORT_PALETTE } from './levels';
@@ -62,14 +63,15 @@ export function sortStars(moves: number, goals: number): number {
 
 export class SortRules implements IGameRules<ColorStack, SortMove, SortState> {
   readonly undoLimit = 0;
-  constructor(private readonly seed: number) {}
+  /** Sort solo usa neighbors(): funciona igual en las cuatro figuras. */
+  constructor(private readonly seed: number, private readonly geometry: IGridGeometry = boardGeometry('hex', SORT_RADIUS)) {}
 
   init(level = 1): SortState {
     const def = SORT_LEVELS[level - 1];
     const rng = new SeededRandom(this.seed);
     const colors = SORT_PALETTE.slice(0, def.colors) as string[];
     const state: SortState = {
-      board: new HexBoard<ColorStack>(hexagonKeys(SORT_RADIUS), () => []),
+      board: new HexBoard<ColorStack>(this.geometry, () => []),
       tray: [], level, goals: def.goals, goalsDone: 0, moves: 0, colors, rng,
     };
     const src = new StackSource(rng, colors);

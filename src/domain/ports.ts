@@ -1,4 +1,4 @@
-import type { HexKey } from './hex';
+import type { CellKey as HexKey } from './geometry/IGridGeometry';
 
 export interface IRandom { next(): number }
 

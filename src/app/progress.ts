@@ -1,43 +1,69 @@
 import { loadJSON, saveJSON } from '../infra/storage';
 import type { I18nKey, Lang } from '../infra/i18n';
+import { SHAPES, capabilities, createGeometry } from '../domain/geometry/GeometryFactory';
+import type { IGridGeometry, Shape } from '../domain/geometry/IGridGeometry';
 
-/** Progreso guardado en el navegador (clave hexablock-proto-v1). */
-export type BoardShape = 'tri' | 'square' | 'hex';
+export type { Shape };
+
+/** Mejores puntajes y estrellas de una figura. */
+export interface ShapeProgress {
+  best: { lines: number; merge: number; mergeMaxTile: number };
+  fit: number[];
+  sort: number[];
+}
+/** Progreso guardado en el navegador: por juego y por figura. */
 export interface Progress {
   settings: { sound: boolean; music: boolean; lang: Lang };
-  shape: { board: BoardShape; pieceSides: number };
-  best: { lines: number; merge: number; mergeMaxTile: number };
-  fit: { stars: number[] };
-  sort: { stars: number[] };
+  shape: Shape;
+  byShape: Record<Shape, ShapeProgress>;
   stats: { linesMaxCombo: number; sortGoalsTotal: number };
 }
 
-const KEY = 'hexablock-proto-v1';
+const KEY = 'hexablock-proto-v2';
+const OLD_KEY = 'hexablock-proto-v1';
 export const LEVEL_COUNT = 6;
+
+const emptyShape = (): ShapeProgress => ({
+  best: { lines: 0, merge: 0, mergeMaxTile: 0 },
+  fit: Array(LEVEL_COUNT).fill(0),
+  sort: Array(LEVEL_COUNT).fill(0),
+});
 
 function defaults(): Progress {
   return {
     settings: { sound: true, music: true, lang: 'es' },
-    shape: { board: 'hex', pieceSides: 6 },
-    best: { lines: 0, merge: 0, mergeMaxTile: 0 },
-    fit: { stars: Array(LEVEL_COUNT).fill(0) },
-    sort: { stars: Array(LEVEL_COUNT).fill(0) },
+    shape: 'hex',
+    byShape: Object.fromEntries(SHAPES.map(s => [s, emptyShape()])) as Record<Shape, ShapeProgress>,
     stats: { linesMaxCombo: 0, sortGoalsTotal: 0 },
   };
 }
 
+const stars = (list: unknown): number[] => Array.from({ length: LEVEL_COUNT }, (_, i) => Number((list as number[] | undefined)?.[i] ?? 0));
+
+/** Lee v2; si solo existe v1 (sin figuras), lo pasa a la figura hexágono. */
 function load(): Progress {
   const d = defaults();
   const saved = loadJSON<Partial<Progress>>(KEY);
-  if (!saved) return d;
-  return {
-    settings: { ...d.settings, ...saved.settings },
-    shape: { ...d.shape, ...saved.shape },
-    best: { ...d.best, ...saved.best },
-    fit: { stars: d.fit.stars.map((_, i) => saved.fit?.stars?.[i] ?? 0) },
-    sort: { stars: d.sort.stars.map((_, i) => saved.sort?.stars?.[i] ?? 0) },
-    stats: { ...d.stats, ...saved.stats },
-  };
+  if (saved) {
+    for (const s of SHAPES) {
+      const sp = saved.byShape?.[s];
+      if (sp) d.byShape[s] = { best: { ...d.byShape[s].best, ...sp.best }, fit: stars(sp.fit), sort: stars(sp.sort) };
+    }
+    return {
+      ...d,
+      settings: { ...d.settings, ...saved.settings },
+      shape: SHAPES.includes(saved.shape as Shape) ? (saved.shape as Shape) : 'hex',
+      stats: { ...d.stats, ...saved.stats },
+    };
+  }
+  const v1 = loadJSON<{ settings?: Progress['settings']; shape?: { board?: string }; best?: ShapeProgress['best']; fit?: { stars: number[] }; sort?: { stars: number[] }; stats?: Progress['stats'] }>(OLD_KEY);
+  if (v1) {
+    d.settings = { ...d.settings, ...v1.settings };
+    d.stats = { ...d.stats, ...v1.stats };
+    d.byShape.hex = { best: { ...d.byShape.hex.best, ...v1.best }, fit: stars(v1.fit?.stars), sort: stars(v1.sort?.stars) };
+    d.shape = (SHAPES.includes(v1.shape?.board as Shape) ? v1.shape!.board : 'hex') as Shape;
+  }
+  return d;
 }
 
 export const progress: Progress = load();
@@ -46,59 +72,83 @@ export function save(): void { saveJSON(KEY, progress); }
 export type LevelGame = 'fit' | 'sort';
 export type ZoneGame = 'lines' | 'fit' | 'sort' | 'merge';
 
-export const levelsWon = (g: LevelGame): number => progress[g].stars.filter(s => s > 0).length;
-/** Un nivel se desbloquea al ganar el anterior (el 1 siempre abierto). */
-export const isUnlocked = (g: LevelGame, level: number): boolean => level === 1 || progress[g].stars[level - 2] > 0;
+/** Qué necesita cada juego de la geometría. */
+const NEEDS: Record<ZoneGame, 'lines' | 'directions' | null> = { lines: 'lines', merge: 'directions', fit: null, sort: null };
 
-export function recordLevel(g: LevelGame, level: number, stars: number): void {
-  progress[g].stars[level - 1] = Math.max(progress[g].stars[level - 1], stars);
+export function setShape(s: Shape): void { progress.shape = s; save(); }
+/** Geometría de la figura elegida (sin acotar: para dibujar fichas, mascota, botones). */
+export const currentGeometry = (): IGridGeometry => createGeometry(progress.shape);
+/** ¿Puede jugarse ese juego con esa figura? (Lines necesita líneas; Merge, direcciones). */
+export function canPlay(game: ZoneGame, shape: Shape = progress.shape): boolean {
+  const need = NEEDS[game];
+  return !need || capabilities(shape)[need];
+}
+/** Figura con la que se juega: la elegida, o hexágono si esa figura no sirve para el juego. */
+export const shapeFor = (game: ZoneGame): Shape => (canPlay(game) ? progress.shape : 'hex');
+const sp = (game: ZoneGame): ShapeProgress => progress.byShape[shapeFor(game)];
+
+export const bestOf = (game: 'lines' | 'merge'): number => sp(game).best[game];
+export const levelStars = (g: LevelGame): number[] => sp(g)[g];
+export const levelsWon = (g: LevelGame, shape: Shape = shapeFor(g)): number => progress.byShape[shape][g].filter(s => s > 0).length;
+/** Un nivel se desbloquea al ganar el anterior (el 1 siempre abierto). */
+export const isUnlocked = (g: LevelGame, level: number): boolean => level === 1 || levelStars(g)[level - 2] > 0;
+
+export function recordLevel(g: LevelGame, level: number, st: number): void {
+  const list = levelStars(g);
+  list[level - 1] = Math.max(list[level - 1], st);
   save();
 }
-/** Devuelve true si es récord nuevo. */
+/** Devuelve true si es récord nuevo (en la figura con que se jugó). */
 export function recordLines(score: number, combo: number): boolean {
-  const record = score > progress.best.lines;
-  progress.best.lines = Math.max(progress.best.lines, score);
+  const b = sp('lines').best;
+  const record = score > b.lines;
+  b.lines = Math.max(b.lines, score);
   progress.stats.linesMaxCombo = Math.max(progress.stats.linesMaxCombo, combo);
   save();
   return record;
 }
 export function recordMerge(score: number, maxTile: number): boolean {
-  const record = score > progress.best.merge;
-  progress.best.merge = Math.max(progress.best.merge, score);
-  progress.best.mergeMaxTile = Math.max(progress.best.mergeMaxTile, maxTile);
+  const b = sp('merge').best;
+  const record = score > b.merge;
+  b.merge = Math.max(b.merge, score);
+  b.mergeMaxTile = Math.max(b.mergeMaxTile, maxTile);
   save();
   return record;
 }
 export function addSortGoals(n: number): void { progress.stats.sortGoalsTotal += n; save(); }
 
-/** Estrellas de zona del mapa. */
+/** Estrellas de zona del mapa, en la figura con que se juega ese juego. */
 export function zoneStars(g: ZoneGame): number {
   const tiers = (v: number, t: [number, number, number]) => t.filter(x => v >= x).length;
+  const b = sp(g).best;
   switch (g) {
-    case 'lines': return tiers(progress.best.lines, [500, 1500, 3000]);
-    case 'merge': return tiers(progress.best.mergeMaxTile, [128, 512, 2048]);
+    case 'lines': return tiers(b.lines, [500, 1500, 3000]);
+    case 'merge': return tiers(b.mergeMaxTile, [128, 512, 2048]);
     default: return tiers(levelsWon(g), [1, 4, 6]);
   }
 }
 
-/** Contador del mapa: estrellas de zona + estrellas de niveles. */
+/** Contador del mapa: estrellas de zona + estrellas de niveles, en la figura elegida. */
 export function totalStars(): number {
   const zones = (['lines', 'fit', 'sort', 'merge'] as ZoneGame[]).reduce((a, g) => a + zoneStars(g), 0);
-  const levels = [...progress.fit.stars, ...progress.sort.stars].reduce((a, b) => a + b, 0);
+  const levels = [...levelStars('fit'), ...levelStars('sort')].reduce((a, b) => a + b, 0);
   return zones + levels;
 }
 
+/** Logros: cuentan el mejor resultado en cualquier figura. */
 export interface Achievement { id: I18nKey; value: number; goal: number }
 export function achievements(): Achievement[] {
-  const p = progress;
+  const all = SHAPES.map(s => progress.byShape[s]);
+  const maxOf = (f: (x: ShapeProgress) => number) => Math.max(...all.map(f));
+  const won = (g: LevelGame) => Math.max(...SHAPES.map(s => levelsWon(g, s)));
   return [
-    { id: 'achv.linesCombo', value: p.stats.linesMaxCombo, goal: 3 },
-    { id: 'achv.lines1000', value: p.best.lines, goal: 1000 },
-    { id: 'achv.merge256', value: p.best.mergeMaxTile, goal: 256 },
-    { id: 'achv.merge2048', value: p.best.mergeMaxTile, goal: 2048 },
-    { id: 'achv.fit3', value: levelsWon('fit'), goal: 3 },
-    { id: 'achv.fitAll', value: levelsWon('fit'), goal: LEVEL_COUNT },
-    { id: 'achv.sortGoals', value: p.stats.sortGoalsTotal, goal: 10 },
-    { id: 'achv.sort3', value: levelsWon('sort'), goal: 3 },
+    { id: 'achv.linesCombo', value: progress.stats.linesMaxCombo, goal: 3 },
+    { id: 'achv.lines1000', value: maxOf(x => x.best.lines), goal: 1000 },
+    { id: 'achv.merge256', value: maxOf(x => x.best.mergeMaxTile), goal: 256 },
+    { id: 'achv.merge2048', value: maxOf(x => x.best.mergeMaxTile), goal: 2048 },
+    { id: 'achv.fit3', value: won('fit'), goal: 3 },
+    { id: 'achv.fitAll', value: won('fit'), goal: LEVEL_COUNT },
+    { id: 'achv.sortGoals', value: progress.stats.sortGoalsTotal, goal: 10 },
+    { id: 'achv.sort3', value: won('sort'), goal: 3 },
   ];
 }

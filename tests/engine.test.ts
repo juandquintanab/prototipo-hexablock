@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { boardGeometry } from '../src/domain/geometry/GeometryFactory';
 import { HexBoard } from '../src/domain/HexBoard';
 import { fromPixel, hexagonKeys, key, rotateCW, toPixel } from '../src/domain/hex';
 import { SeededRandom } from '../src/domain/random';
@@ -7,28 +8,28 @@ import { FitRules } from '../src/domain/games/fit/FitRules';
 
 describe('HexBoard', () => {
   it('should_have_19_cells_when_radius_is_2', () => {
-    const board = new HexBoard(hexagonKeys(2), () => 0);
+    const board = new HexBoard(boardGeometry('hex', 2), () => 0);
     expect(board.size).toBe(19);
   });
 
   it('should_have_61_cells_when_radius_is_4', () => {
-    const board = new HexBoard(hexagonKeys(4), () => 0);
+    const board = new HexBoard(boardGeometry('hex', 4), () => 0);
     expect(board.size).toBe(61);
   });
 
   it('should_have_6_neighbors_when_cell_is_center', () => {
-    const board = new HexBoard(hexagonKeys(2), () => 0);
+    const board = new HexBoard(boardGeometry('hex', 2), () => 0);
     expect(board.neighbors(key(0, 0))).toHaveLength(6);
   });
 
   it('should_have_3_neighbors_when_cell_is_corner', () => {
-    const board = new HexBoard(hexagonKeys(2), () => 0);
+    const board = new HexBoard(boardGeometry('hex', 2), () => 0);
     expect(board.neighbors(key(2, 0))).toHaveLength(3);
   });
 
   it('should_return_lines_on_3_axes_when_board_is_hexagon', () => {
     // Arrange
-    const board = new HexBoard(hexagonKeys(2), () => 0);
+    const board = new HexBoard(boardGeometry('hex', 2), () => 0);
     // Act
     const lines = board.lines();
     // Assert: 5 líneas por eje, 3 ejes; la central de cada eje tiene 5 celdas
@@ -38,7 +39,7 @@ describe('HexBoard', () => {
   });
 
   it('should_copy_cells_when_cloned', () => {
-    const board = new HexBoard<number[]>(hexagonKeys(1), () => []);
+    const board = new HexBoard<number[]>(boardGeometry('hex', 1), () => []);
     const copy = board.clone(c => [...c]);
     copy.get(key(0, 0)).push(1);
     expect(board.get(key(0, 0))).toEqual([]);

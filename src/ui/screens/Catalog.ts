@@ -1,15 +1,26 @@
 import * as H from '../../design-system/hexablock';
-import { BoardShape, progress, save } from '../../app/progress';
+import { SHAPES, boardGeometry, capabilities, createGeometry } from '../../domain/geometry/GeometryFactory';
+import { Shape, progress, setShape } from '../../app/progress';
 import { t } from '../../infra/i18n';
 import { go, Screen } from '../router';
+import { sampleBoard } from '../board/BoardView';
 import { el, hexi, iconBtn, signHTML } from '../ui';
 import { groundArt } from './art';
 
-const GEOS: [BoardShape, number][] = [['tri', 3], ['square', 4], ['hex', 6]];
+/** Texto de reglas de una figura, sacado de su geometría: vecinas, ejes de líneas y giro. */
+function ruleText(shape: Shape): string {
+  const g = createGeometry(shape);
+  const axes = g.withCells(g.cells(2)).directions().length / 2;
+  return t('shapeRule', {
+    n: g.adjacent(g.origin).length,
+    lines: axes ? t('axesN', { n: axes }) : t('noLines'),
+    deg: 360 / g.rotationSteps,
+  });
+}
 
 /**
- * Catálogo de figuras: solo apariencia. La elección se guarda, pero el resto de la app sigue en hexágono.
- * TODO: conectar geometría (Factory Method) y forma de ficha (Strategy)
+ * Catálogo de figuras: una sola elección que es a la vez la forma del tablero y la de las fichas.
+ * Cambia los juegos, la vista previa, los botones de nivel y la mascota.
  */
 export function CatalogScreen(): Screen {
   const s = el(`<section class="scr menu">
@@ -20,27 +31,27 @@ export function CatalogScreen(): Screen {
   const body = s.querySelector<HTMLElement>('[data-body]')!;
 
   function draw(): void {
-    const sh = progress.shape;
-    const geoBtns = GEOS.map(([g, n]) =>
-      `<button class="hx-choice choice-geo" data-geo="${g}" aria-pressed="${sh.board === g}">${H.shape({ sides: n, size: 36, color: 'game-merge' })}${t(`geo.${g}`)}</button>`).join('');
-    let sideBtns = '';
-    for (let n = 3; n <= 10; n++) sideBtns += `<button class="hx-choice choice-side" data-sides="${n}" aria-pressed="${sh.pieceSides === n}">${H.shape({ sides: n, size: 28, color: 'piece-purple' })}${n}</button>`;
-    const cell = sh.board === 'tri' ? 15 : sh.board === 'square' ? 13 : 16;
-    const preview = H.board({ geo: sh.board, size: 2, cell, pieceSides: sh.pieceSides, fill: (_c, i) => (i * 7) % 3 === 0 ? H.PIECES[i % 8] : null });
-    const caption = t('shapeCaption', { geo: t(`geo.${sh.board}`).toLowerCase(), sides: t(`sides.${sh.pieceSides}` as 'sides.6') });
+    const shape = progress.shape;
+    const choices = SHAPES.map(sh => {
+      const g = createGeometry(sh);
+      const limited = !capabilities(sh).lines;
+      return `<button class="hx-choice choice-shape" data-shape="${sh}" aria-pressed="${shape === sh}">
+        ${H.shape({ sides: g.sides, size: 36, color: 'game-merge' })}${t(`shape.${sh}`)}
+        ${limited ? `<small class="choice-note">${t('onlySortFit')}</small>` : ''}
+      </button>`;
+    }).join('');
+    const g = createGeometry(shape);
     const content = `
       <div class="catalog">
-        <div class="hx-label catalog__label">${t('boardLabel')}</div>
-        <div class="catalog__row">${geoBtns}</div>
-        <div class="hx-label catalog__label">${t('pieceLabel')}</div>
-        <div class="catalog__row catalog__row--wrap">${sideBtns}</div>
+        <div class="hx-label catalog__label">${t('shapeLabel')}</div>
+        <div class="catalog__row catalog__row--wrap">${choices}</div>
         <div class="catalog__preview">
-          <div class="hx-screen hx-screen--merge catalog__board">${preview}</div>
-          <div class="catalog__hexi">${hexi({ sides: sh.pieceSides, mood: 'celebra', size: 84 })}</div>
+          <div class="hx-screen hx-screen--merge catalog__board">${sampleBoard(boardGeometry(shape, 2))}</div>
+          <div class="catalog__hexi">${hexi({ sides: g.sides, mood: 'celebra', size: 84 })}</div>
         </div>
-        <div class="catalog__caption">${caption}</div>
-        <div class="hx-label">${t(`rule.${sh.board}`)}</div>
-        <div class="hx-label catalog__note">${t('hexNote')}</div>
+        <div class="catalog__caption">${t(`shape.${shape}`)}</div>
+        <div class="hx-label">${ruleText(shape)}</div>
+        ${capabilities(shape).lines ? '' : `<div class="hx-label catalog__note">${t('onlySortFit')}</div>`}
       </div>`;
     const first = !body.firstChild;
     body.innerHTML = signHTML({ title: t('shapes'), body: content, cls: first ? '' : 'no-drop' });
@@ -50,15 +61,8 @@ export function CatalogScreen(): Screen {
   s.addEventListener('click', e => {
     const tgt = e.target as HTMLElement;
     if (tgt.closest('[data-back]')) { go({ name: 'settings' }); return; }
-    const g = tgt.closest<HTMLElement>('[data-geo]');
-    if (g) {
-      const geo = g.dataset.geo as BoardShape;
-      progress.shape.board = geo;
-      progress.shape.pieceSides = GEOS.find(x => x[0] === geo)![1]; // vuelve a su figura natural
-      save(); draw(); return;
-    }
-    const n = tgt.closest<HTMLElement>('[data-sides]');
-    if (n) { progress.shape.pieceSides = Number(n.dataset.sides); save(); draw(); }
+    const c = tgt.closest<HTMLElement>('[data-shape]');
+    if (c) { setShape(c.dataset.shape as Shape); draw(); }
   });
   return { el: s };
 }

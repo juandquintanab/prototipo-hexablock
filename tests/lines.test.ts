@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { HexKey, key } from '../src/domain/hex';
 import { LinesRules, LinesScoring, LinesState } from '../src/domain/games/lines/LinesRules';
 
-const single = { cells: [{ q: 0, r: 0 }], color: 'piece-red' as const };
+const single = { cells: ['0,0'], color: 'piece-red' as const };
 
 function freshState(): { rules: LinesRules; s: LinesState } {
   const rules = new LinesRules(3);
@@ -60,7 +60,7 @@ describe('LinesRules', () => {
     const { rules, s } = freshState();
     s.board.keys().forEach(k => s.board.set(k, 'piece-green'));
     s.board.set(key(0, 0), null);
-    s.tray = [{ cells: [{ q: 0, r: 0 }, { q: 1, r: 0 }], color: 'piece-red' }, null, null];
+    s.tray = [{ cells: ['0,0', '1,0'], color: 'piece-red' }, null, null];
     // Act + Assert
     expect(rules.status(s)).toBe('lost');
   });
