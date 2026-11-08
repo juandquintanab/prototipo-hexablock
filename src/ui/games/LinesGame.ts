@@ -25,7 +25,25 @@ export function createLines(shell: GameShell): GameController {
   shell.hudRight.innerHTML = '<div class="hud-spacer"></div>';
 
   let display = engine.state.board; // lo que se ve (puede ir un paso atrás durante la animación)
-  const paint = (k: CellKey) => { const c = display.get(k); return c ? { color: c } : null; };
+
+  // Caras: susto en las líneas a punto de completarse (o que van a explotar), alegría al encajar.
+  let scared = new Set<CellKey>();
+  let happy = new Set<CellKey>();
+  let happyTimer = 0;
+  const moodOf = (k: CellKey): H.FaceMood => scared.has(k) ? 'scared' : happy.has(k) ? 'happy' : 'idle';
+  const paint = (k: CellKey) => { const c = display.get(k); return c ? { color: c, face: moodOf(k) } : null; };
+  function render(): void {
+    scared = new Set();
+    for (const line of geometry.lines()) {
+      if (line.filter(k => display.get(k) === null).length <= 1) line.forEach(k => { if (display.get(k)) scared.add(k); });
+    }
+    board.render(paint);
+  }
+  function cheer(keys: CellKey[]): void {
+    happy = new Set(keys);
+    clearTimeout(happyTimer);
+    happyTimer = window.setTimeout(() => { happy = new Set(); render(); }, 700);
+  }
 
   function drawHud(): void {
     const st = engine.state;
@@ -53,7 +71,8 @@ export function createLines(shell: GameShell): GameController {
     const cleared = events.find(e => e.type === 'linesCleared') as Extract<GameEvent, { type: 'linesCleared' }> | undefined;
     placed.forEach(k => before.set(k, color));
     display = before;
-    board.render(paint);
+    cheer(placed);
+    render();
     board.animate(placed, 'hx-anim-snap');
     sfx('place');
     drawTray();
@@ -61,7 +80,7 @@ export function createLines(shell: GameShell): GameController {
 
     const finish = () => {
       display = engine.state.board;
-      board.render(paint);
+      render();
       recordLines(engine.state.score, engine.state.maxCombo);
       drawHud();
       if (engine.status === 'lost') {
@@ -102,9 +121,9 @@ export function createLines(shell: GameShell): GameController {
 
   drawTray();
   drawHud();
-  board.render(paint);
+  render();
 
   return {
-    destroy() { if (pending) clearTimeout(pending.timer); pending = null; off(); placement.destroy(); },
+    destroy() { clearTimeout(happyTimer); if (pending) clearTimeout(pending.timer); pending = null; off(); placement.destroy(); },
   };
 }

@@ -1,3 +1,4 @@
+import * as H from '../../design-system/hexablock';
 import { GameEngine } from '../../domain/GameEngine';
 import type { CellKey } from '../../domain/geometry/IGridGeometry';
 import { FIT_TIME_MS, FitMove, FitRules, fitStars, pieceShape } from '../../domain/games/fit/FitRules';
@@ -31,12 +32,20 @@ export function createFit(shell: GameShell): GameController {
   const elapsed = () => !running ? 0 : (pausedAt || performance.now()) - startedAt - pausedTotal;
 
   const shapeOf = (i: number) => pieceShape(geometry, engine.state.pieces[i]);
+  // caras: alegría un instante al encajar una pieza
+  let happy = new Set<CellKey>();
+  let happyTimer = 0;
   const paint = (k: CellKey) => {
     const id = engine.state.board.get(k);
-    return id === null ? null : { color: engine.state.pieces[id].color };
+    return id === null ? null : { color: engine.state.pieces[id].color, face: (happy.has(k) ? 'happy' : 'idle') as H.FaceMood };
   };
 
   function draw(snap: CellKey[] = []): void {
+    if (snap.length) {
+      happy = new Set(snap);
+      clearTimeout(happyTimer);
+      happyTimer = window.setTimeout(() => { happy = new Set(); board.render(paint); }, 700);
+    }
     board.render(paint);
     if (snap.length) board.animate(snap, 'hx-anim-snap');
     const st = engine.state;
@@ -123,6 +132,6 @@ export function createFit(shell: GameShell): GameController {
       if (p) { pausedAt = performance.now(); timerFill.style.animationPlayState = 'paused'; }
       else { pausedTotal += performance.now() - pausedAt; pausedAt = 0; timerFill.style.animationPlayState = 'running'; }
     },
-    destroy() { off(); placement.destroy(); },
+    destroy() { clearTimeout(happyTimer); off(); placement.destroy(); },
   };
 }

@@ -1,8 +1,8 @@
 import * as H from '../../design-system/hexablock';
 import type { CellKey, IGridGeometry, Point } from '../../domain/geometry/IGridGeometry';
 
-/** Qué dibujar en una celda: color de ficha plana y/o SVG extra (número, pila). */
-export interface CellPaint { color?: string | null; html?: string; cls?: string; delay?: number }
+/** Qué dibujar en una celda: color de ficha plana, cara y/o SVG extra (número, pila). */
+export interface CellPaint { color?: string | null; html?: string; cls?: string; delay?: number; face?: H.FaceMood | null }
 
 export interface BoardViewOptions {
   /** Unidades del SVG por unidad de la geometría (1 = radio de un hexágono). */
@@ -80,17 +80,25 @@ export class BoardView {
   /** Tamaño de letra para números dentro de una celda, proporcional a su radio interior. */
   fontSize(factor = 0.8): number { return this.cell * this.geometry.inradius * factor; }
 
+  /** Cara de una ficha centrada en el polígono dado (como board({faces}) del sistema: parpadeo a destiempo). */
+  faceAt(poly: H.Pt[], mood: H.FaceMood, i: number): string {
+    const c = H.centroid(poly);
+    return H.face(c[0], c[1], this.cell * this.geometry.inradius * 0.86, mood, (i * 0.37) % 4);
+  }
+
   render(paint: (k: CellKey) => CellPaint | null): void {
     let s = '';
-    for (const k of this.keys) {
+    this.keys.forEach((k, i) => {
       const p = paint(k);
-      if (!p || (!p.color && !p.html)) continue;
+      if (!p || (!p.color && !p.html)) return;
       const style = p.delay ? ` style="animation-delay:${p.delay}ms"` : '';
       s += `<g class="hx-piece ${p.cls ?? ''}" data-key="${k}"${style}>`;
-      if (p.color) s += H.prism(this.poly(k), p.color, this.depth);
+      // brillo arriba y sombra de contacto debajo (prism del sistema); sin sombra cuando hay lateral (Sort)
+      if (p.color) s += H.prism(this.poly(k), p.color, this.depth, '', { shadow: !this.depth });
       if (p.html) s += p.html;
+      if (p.color && p.face) s += this.faceAt(this.poly(k), p.face, i);
       s += '</g>';
-    }
+    });
     this.pieces.innerHTML = s;
   }
 

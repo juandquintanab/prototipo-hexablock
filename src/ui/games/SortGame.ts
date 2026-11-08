@@ -36,7 +36,8 @@ export function createSort(shell: GameShell): GameController {
     if (!st.length) return null;
     const run = topRun(st);
     const base = st.slice(0, st.length - run), top = st.slice(st.length - run);
-    const layers = (list: string[], from: number) => list.map((c, i) => H.prism(board.poly(k, (from + i) * LAYER), c, DEPTH)).join('');
+    // como stack() del sistema: solo la ficha de arriba lleva brillo
+    const layers = (list: string[], from: number) => list.map((c, i) => H.prism(board.poly(k, (from + i) * LAYER), c, DEPTH, '', { flat: from + i < st.length - 1 })).join('');
     const g = board.center(k);
     const ty = g.y - DEPTH * 0.4 - (st.length - 1) * LAYER;
     return {
@@ -54,7 +55,7 @@ export function createSort(shell: GameShell): GameController {
   }
   function drawTray(): void {
     shell.tray.innerHTML = `<span class="hx-label tray-label">${t('nextStack')}</span>` + engine.state.tray.map((p, i) =>
-      `<div class="hx-tray__slot${p ? '' : ' is-used'}" data-slot="${i}">${p ? H.stack(p, { size: 40, layer: 5, sides: geometry.sides }) : ''}</div>`).join('');
+      `<div class="hx-tray__slot${p ? '' : ' is-used'}" data-slot="${i}">${p ? H.stack(p, { size: 40, layer: 5, sides: geometry.sides, face: true }) : ''}</div>`).join('');
     placement?.select(null);
   }
 
@@ -143,7 +144,7 @@ export function createSort(shell: GameShell): GameController {
     anyCell: true,
     cells: s => engine.state.tray[s] ? [geometry.origin] : null,
     color: s => engine.state.tray[s]?.slice(-1)[0] ?? 'piece-blue',
-    ghost: (s, px) => H.stack(engine.state.tray[s]!, { size: Math.round(px * 2 * geometry.inradius * 1.1), layer: Math.max(4, Math.round(px * 0.22)), sides: geometry.sides }),
+    ghost: (s, px) => H.stack(engine.state.tray[s]!, { size: Math.round(px * 2 * geometry.inradius * 1.1), layer: Math.max(4, Math.round(px * 0.22)), sides: geometry.sides, face: true }),
     canPlace: (s, k) => engine.isValid({ slot: s, key: k }),
     place,
     onInvalid: () => sfx('invalid'),
