@@ -32,8 +32,10 @@ function art(): string {
   (Object.keys(POS) as H.GameId[]).forEach(id => {
     const p = POS[id];
     const name = t(`world.${id}`);
-    s += `<g class="hx-map__world" data-id="${id}" tabindex="0" role="button" aria-label="${esc(name)}"><g transform="translate(${p[0]} ${p[1]}) scale(${p[2]})">${H.LANDMARKS[id]()}</g>` +
-      worldSign(p[0] + 6, p[1] + 110 * p[2] + 4, name, zoneStars(id)) + '</g>';
+    // tres capas: el mundo (toque), el grupo que se levanta (world-lift) y la figurita con su animación propia
+    s += `<g class="hx-map__world" data-id="${id}" tabindex="0" role="button" aria-label="${esc(name)}"><g class="world-lift">` +
+      `<g transform="translate(${p[0]} ${p[1]}) scale(${p[2]})">${H.LANDMARKS[id]()}</g>` +
+      worldSign(p[0] + 6, p[1] + 110 * p[2] + 4, name, zoneStars(id)) + '</g></g>';
   });
   s += `<g transform="translate(150 620)">${H.mascot({ size: 52 }).replace('class="hx-mascot ', 'class="hx-mascot is-alive ')}</g>`;
   return s;
@@ -53,18 +55,24 @@ export function MapScreen(r: Extract<Route, { name: 'map' }>): Screen {
   </section>`);
   let sheet: HTMLElement | null = null;
   const select = (id: H.GameId | null) =>
-    s.querySelectorAll<SVGGElement>('.hx-map__world').forEach(w => w.classList.toggle('is-selected', w.dataset.id === id));
+    s.querySelectorAll<SVGGElement>('.hx-map__world').forEach(w => {
+      w.classList.toggle('is-selected', w.dataset.id === id);
+      if (w.dataset.id !== id) w.blur();
+    });
+  const close = () => { sheet?.remove(); sheet = null; select(null); };
   const open = (id: H.GameId) => {
     sheet?.remove();
     select(id);
-    sheet = showZoneSheet(s, id, () => { sheet = null; select(null); });
+    sheet = showZoneSheet(s, id, close);
   };
   s.addEventListener('click', e => {
     const tgt = e.target as Element;
     const nav = tgt.closest<HTMLElement>('[data-go]');
     if (nav) { go({ name: nav.dataset.go as 'settings' | 'achievements' }); return; }
     const w = tgt.closest<SVGGElement>('.hx-map__world');
-    if (w) open(w.dataset.id as H.GameId);
+    if (w) { open(w.dataset.id as H.GameId); return; }
+    // tocar el mapa fuera de un mundo o del letrero cierra el letrero
+    if (sheet && !tgt.closest('.zone-sheet')) close();
   });
   s.addEventListener('keydown', e => {
     const w = (e.target as Element).closest<SVGGElement>('.hx-map__world');

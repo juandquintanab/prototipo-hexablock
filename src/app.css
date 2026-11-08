@@ -38,6 +38,15 @@ body { display: flex; justify-content: center; }
 .hud-btns { display: flex; gap: var(--space-2); }
 .hx-map__world:focus { outline: none; }
 .hx-map__world:focus-visible { outline: 3px solid var(--ink); }
+/* El mundo en sí no se transforma (anula la regla de bundle.css): se levanta solo su grupo .world-lift,
+   separado de la animación constante de la figurita. El hover solo existe donde hay puntero real:
+   en el teléfono :hover se queda pegado después de tocar. */
+.map .hx-map__world, .map .hx-map__world:hover, .map .hx-map__world.is-selected { transform: none; transition: none; }
+.world-lift { transition: transform var(--dur-fast) var(--ease-bounce); transform-box: fill-box; transform-origin: 50% 100%; }
+.hx-map__world.is-selected .world-lift { transform: translateY(-4px) scale(1.04); }
+@media (hover: hover) and (pointer: fine) {
+  .hx-map__world:hover .world-lift { transform: translateY(-4px) scale(1.04); }
+}
 .zone-sheet { z-index: 3; bottom: max(12px, env(safe-area-inset-bottom)); }
 .zone-sheet .hx-sign { max-width: 380px; margin-left: auto; margin-right: auto; }
 .sheet-close { position: absolute; right: 10px; top: -34px; z-index: 3; }
