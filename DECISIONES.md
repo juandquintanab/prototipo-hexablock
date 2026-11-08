@@ -5,10 +5,11 @@ Puntos donde `PROTOTIPO.md` dejaba espacio a interpretación. En cada caso se el
 ## Estructura
 - **Raíz del proyecto**: el repositorio es la carpeta `hexablock-prototipo/` de la sección 2 (no hay subcarpeta extra).
 - **Sistema de diseño**: `design-system/` (raíz) es la copia íntegra del kit, como referencia. Lo que usa la app vive en `src/design-system/` (`tokens.css`, `tokens.json`, `bundle.css` y `hexablock.ts`).
-- **`hexablock.ts`** es un port 1:1 de `bundle.js` (mismos nombres y mismo dibujo), con tres cambios mínimos:
-  - `fmt(n)` nuevo: separador de miles con espacio fino (guía de marca: "8 192"). `countUp` lo usa en vez de `toLocaleString('es')`, que no agrupa números de 4 cifras.
+- **`hexablock.ts`** es un port 1:1 de `bundle.js` (mismos nombres y mismo dibujo), con estos cambios mínimos:
+  - `fmt(n)` nuevo: separador de miles con espacio fino U+2009, el mismo que usa `countUp` del kit nuevo ("8 192").
   - `mergeTile` usa el color `merge-2048` para valores mayores a 2048 (no hay token más alto).
-  - `GameId` y `PieceColor` como tipos.
+  - Los dos `<text>` de `logo()` llevan además `font-weight:400` y `lining-nums`, como pide la regla de tipografía. No cambia el dibujo.
+  - Tipos de TypeScript (`GameId`, `PieceColor`, `Mood`, `FaceMood`, `SceneId`).
 - Las fuentes se cargan con `<link>` en `index.html` además del `@import` de `bundle.css`, porque al empaquetar el `@import` puede quedar después de otras reglas y el navegador lo ignoraría.
 
 ## Motor
@@ -93,6 +94,69 @@ El catálogo ya no es solo apariencia: hay una sola elección, **Figura** (triá
 - El tablero, las piezas de la bandeja, el fantasma y la vista previa del catálogo se dibujan con `center()`/`polygon()` de la geometría.
 - Las fichas sueltas (pilas, ficha de Merge, botones de nivel, mascota) usan los helpers del sistema con `sides` de la figura.
 - `board()`/`piece()` del sistema no sirven para el pentágono Cairo, así que no se usan para el tablero.
+
+## Rediseño visual (kit nuevo: escenas, caras, efectos, tipografía)
+
+Solo cambió la interfaz: `domain/`, `app/` (guardado), los controles de colocar y deslizar y el catálogo quedaron iguales (sin diferencias en git). Las 118 pruebas siguen en verde.
+
+**PROTOTIPO.md**
+- La sección 8 del documento nuevo todavía dice que el catálogo "no afecta los juegos". Se mantiene lo ya acordado: la figura sí cambia tablero y fichas (ver "Figuras").
+- "Así vas" no aparece en el kit, en PROTOTIPO.md ni en la app, así que no hubo nada que revisar ahí.
+
+**Tablero**
+- `board({ base: true, faces })` del sistema solo sabe dibujar hexágonos, cuadrados y triángulos, no el pentágono Cairo. `BoardView` dibuja las mismas capas con las mismas medidas sobre los polígonos de cada geometría:
+  - sombra al 16%, grosor `stone-600` de `max(5, celda·0.34)` y cara `stone-400`;
+  - huecos con borde `stone-600` y fondo `stone-500` hundido;
+  - fichas con brillo y sombra de contacto;
+  - caras con parpadeo a destiempo.
+- El crecimiento de la plataforma copia los valores de `board()`: triángulo 1.24, cuadrado 1.12 y el resto 1.16 (el pentágono usa 1.16).
+
+**Caras**
+- **Lines**: susto (`scared`) en las fichas de toda línea a la que le falta una celda o menos. Eso incluye las líneas que están explotando.
+- **Lines y Fit**: alegría (`happy`) durante 0.7 s en las fichas recién colocadas.
+- **Sort**: el README de GameScreen dice "la cima con el número de su racha; la siguiente pila tiene cara". Por eso las pilas del tablero muestran el número y la cara va en las pilas de la bandeja y en la que arrastras.
+- **Merge**: sin cara; el número es su cara.
+- Como en `stack()`, solo la ficha de arriba de cada pila tiene brillo.
+
+**Efectos**
+- `burst` en ola (40 ms) en cada celda de Lines que se limpia, en cada fusión de Merge y en cada pila de Sort que se completa.
+- `floatText` con los puntos de cada jugada en Lines (colocar y limpiar) y en Merge (suma de las fusiones del deslizamiento). Sort no suma puntos, así que no tiene `floatText`.
+- `combo` cuando una sola jugada hace 2 o más de algo: líneas en Lines, fusiones en Merge, metas en Sort. `shake` de 5 px desde 3.
+- `confetti` en victoria y también en un récord nuevo de Lines o Merge (el README de Effects lo pide en los dos casos).
+- **Conteo en el HUD**: el puntaje cuenta desde el valor anterior hasta el nuevo en 420 ms, no desde 0. `countUp` del kit siempre empieza en 0, que en cada jugada se vería raro. El letrero de resultado sí usa `countUp`.
+
+**Hexi en la partida**
+- Va en la esquina **inferior izquierda**, parado sobre el borde de la bandeja. La esquina derecha la ocupa el botón girar de Fit, y el alto de la bandeja cambia según el juego.
+- Humores (sección 4.6):
+  - `sorpresa` al colocar algo grande: pieza de 4 o más en Lines y Fit, pila de 5 o más en Sort;
+  - `feliz` al limpiar, encajar o fusionar;
+  - `celebra` en combo y en victoria;
+  - `triste` en derrota;
+  - `nervioso` como humor de base cuando queda poco espacio: menos del 25% libre en Lines, 3 celdas vacías o menos en Sort, 2 o menos en Merge. Fit no tiene ese límite.
+
+**Cortina**
+- Va en Inicio → Mapa, Zona → Partida (Lines y Merge) y Niveles → Partida.
+- Un segundo toque durante la cortina no navega dos veces.
+- El tiempo de la instrucción empieza a contar cuando la cortina termina de destaparse.
+- Medido: 0.7 s en tapar y 1.4 s en total.
+
+**HUD y Merge**
+- El letrerito de madera mide lo que pide su contenido (mínimo 128 px) y queda centrado entre pausa y los controles.
+- La próxima ficha de Merge va sobre un círculo `trim`, como pide GameScreen.
+
+**Tipografía**
+- Todo en Young Serif con `lining-nums`: los `font:` de `app.css` (incluidos los que usaban Gelasio) y todos los `<text>` de SVG. El puntaje del resultado usa además `tabular-nums`.
+- Un recorrido automático por las diez pantallas, la pausa, la instrucción y el resultado no encontró ningún texto con otra letra, sin números alineados o con peso distinto de 400.
+- Gelasio solo queda para `.hx-prose`, que la app no usa hoy porque no tiene párrafos largos.
+
+**Verificación (390×844)**
+Los cuatro juegos se jugaron hasta el final por el flujo real (mapa, letrero, cortina, partida), igual que antes:
+- **Lines**: "Sin espacio" con récord nuevo.
+- **Merge**: "Sin movimientos" con récord nuevo.
+- **Sort**: nivel 1 ganado.
+- **Fit**: nivel 1 resuelto con toques (girar y colocar), confeti y Hexi celebrando.
+
+La plataforma de piedra también se probó en las cuatro figuras.
 
 ## Hexa Sort "no carga" (no se pudo reproducir)
 
