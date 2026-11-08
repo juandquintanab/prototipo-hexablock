@@ -167,6 +167,15 @@ export class BoardView {
     this.previewLayer.innerHTML = '';
   }
 
+  /** Centro de una celda en coordenadas de pantalla (para los efectos). */
+  clientPoint(k: CellKey): { x: number; y: number } | null {
+    const m = this.svg.getScreenCTM();
+    if (!m) return null;
+    const c = this.center(k);
+    const p = new DOMPoint(c.x, c.y - this.depth * 0.4).matrixTransform(m);
+    return { x: p.x, y: p.y };
+  }
+
   /** Punto de pantalla → coordenadas de la geometría. */
   toGeometry(clientX: number, clientY: number): Point | null {
     const m = this.svg.getScreenCTM();

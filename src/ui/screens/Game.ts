@@ -8,6 +8,7 @@ import { createLines } from '../games/LinesGame';
 import { createMerge } from '../games/MergeGame';
 import { createSort } from '../games/SortGame';
 import type { GameController, GameFactory, GameShell } from '../games/types';
+import { Juice } from '../games/juice';
 import { showInstruction } from '../overlays/Instruction';
 import { showPause } from '../overlays/Pause';
 import { showResult } from '../overlays/Result';
@@ -38,20 +39,41 @@ export function GameScreen(r: Extract<Route, { name: 'game' }>): Screen {
   let ctrl: GameController;
   let paused = false, ended = false, intro = true;
   let endTimer: number | undefined;
+  // HUD: el número cuenta desde el valor anterior hasta el nuevo (countUp)
+  let shownValue: number | null = null, countFrame = 0;
+  const countTo = (el: HTMLElement, from: number, to: number, ms = 420) => {
+    cancelAnimationFrame(countFrame);
+    let t0: number | null = null;
+    const step = (now: number) => {
+      t0 ??= now;
+      const k = Math.min(1, (now - t0) / ms), e = 1 - Math.pow(1 - k, 3);
+      el.textContent = H.fmt(from + (to - from) * e);
+      if (k < 1) countFrame = requestAnimationFrame(step);
+    };
+    countFrame = requestAnimationFrame(step);
+  };
 
   const shell: GameShell = {
     game, level, root: s,
     top: q('[data-top]'), hudCenter: q('[data-center]'), hudRight: q('[data-right]'),
     sub: q('[data-sub]'), boardWrap: q('[data-board]'), tray: q('[data-tray]'),
+    juice: new Juice(s),
     isActive: () => !paused && !ended && !intro,
     setCenter(label, value, small) {
-      shell.hudCenter.innerHTML = `<small>${esc(label)}</small><b>${esc(value)}</b>${small != null ? `<small>${esc(small)}</small>` : ''}`;
+      const numeric = typeof value === 'number';
+      shell.hudCenter.innerHTML = `<small>${esc(label)}</small><b>${numeric ? H.fmt(shownValue ?? value) : esc(value)}</b>${small != null ? `<small>${esc(small)}</small>` : ''}`;
+      if (numeric) {
+        const b = shell.hudCenter.querySelector('b')!;
+        if (shownValue !== null && shownValue !== value) countTo(b, shownValue, value);
+        shownValue = value;
+      }
     },
     end(spec, delayMs = 450) {
       ended = true;
       endTimer = window.setTimeout(() => {
         sfx(spec.win ? 'win' : 'lose');
         showResult(s, { ...spec, secondary: spec.secondary ?? (leveled ? { label: t('levels'), action: shell.actions.levels } : { label: t('map'), action: shell.actions.map }) });
+        if (spec.win || spec.celebrate) shell.juice.confetti();
       }, delayMs);
     },
     reopen() { ended = false; },
@@ -66,6 +88,8 @@ export function GameScreen(r: Extract<Route, { name: 'game' }>): Screen {
   function mount(): void {
     [shell.top, shell.hudCenter, shell.hudRight, shell.sub, shell.boardWrap, shell.tray].forEach(e => { e.innerHTML = ''; });
     ended = false;
+    shownValue = null;
+    cancelAnimationFrame(countFrame);
     ctrl = FACTORIES[game](shell);
   }
   function restart(): void {

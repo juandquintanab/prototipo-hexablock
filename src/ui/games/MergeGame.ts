@@ -45,7 +45,7 @@ export function createMerge(shell: GameShell): GameController {
     if (bump.length) board.animate(bump, 'hx-anim-bump');
     if (pop) board.animate([pop], 'hx-anim-pop');
     const st = engine.state;
-    shell.setCenter(t('points'), H.fmt(st.score), t('bestN', { n: H.fmt(Math.max(bestOf('merge'), st.score)) }));
+    shell.setCenter(t('points'), st.score, t('bestN', { n: H.fmt(Math.max(bestOf('merge'), st.score)) }));
     nextEl.innerHTML = H.shape({ sides: geometry.sides, size: 56, color: 'cell-slot' }) + H.mergeTile(st.next, { size: 44, sides: geometry.sides });
     undoBtn.disabled = !engine.canUndo;
   }
@@ -67,8 +67,12 @@ export function createMerge(shell: GameShell): GameController {
     board.slide(moves, dur('fast'));
     const finish = () => {
       draw(merged.map(m => m.key), spawned?.key ?? null);
-      if (merged.length) sfx('merge', Math.max(...merged.map(m => m.value)));
-      else sfx('place');
+      if (merged.length) {
+        sfx('merge', Math.max(...merged.map(m => m.value)));
+        shell.juice.burst(board, merged.map(m => m.key), k => `merge-${Math.min(engine.state.board.get(k), 2048)}`, 0);
+        shell.juice.points(board, merged.map(m => m.key), merged.reduce((a, m) => a + m.value, 0));
+        shell.juice.combo(merged.length);
+      } else sfx('place');
       recordMerge(engine.state.score, engine.state.maxTile);
       checkEnd();
     };
@@ -87,7 +91,7 @@ export function createMerge(shell: GameShell): GameController {
         primary: { label: t('keepGoing'), action: () => { rules.continueAfterWin(engine.state); shell.reopen(); } },
       });
     } else {
-      shell.end({ win: false, title: t('noMoves'), score: st.score, ribbon, primary: { label: t('again'), action: shell.actions.again } });
+      shell.end({ win: false, celebrate: record, title: t('noMoves'), score: st.score, ribbon, primary: { label: t('again'), action: shell.actions.again } });
     }
   }
 

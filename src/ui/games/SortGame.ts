@@ -106,6 +106,10 @@ export function createSort(shell: GameShell): GameController {
       } else if (e.type === 'stackCleared') {
         const g = board.pieceEl(e.key)?.querySelector('.stack-run');
         if (g) H.replay(g, 'hx-anim-clear');
+        const top = display.get(e.key).slice(-1)[0];
+        shell.juice.burst(board, [e.key], () => top, 0, 14);
+        // combo cuando una sola jugada cumple 2 o más metas (al llegar a la última)
+        if (gained >= 2 && steps.slice(i + 1).every(x => x.type !== 'stackCleared')) shell.juice.combo(gained);
         sfx('goal');
         schedule(dur('base'), () => {
           const st = display.get(e.key);

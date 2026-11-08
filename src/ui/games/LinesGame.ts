@@ -47,7 +47,7 @@ export function createLines(shell: GameShell): GameController {
 
   function drawHud(): void {
     const st = engine.state;
-    shell.setCenter(t('points'), H.fmt(st.score), t('bestN', { n: H.fmt(Math.max(bestOf('lines'), st.score)) }));
+    shell.setCenter(t('points'), st.score, t('bestN', { n: H.fmt(Math.max(bestOf('lines'), st.score)) }));
   }
   function drawTray(): void {
     shell.tray.innerHTML = engine.state.tray.map((p, i) =>
@@ -69,7 +69,9 @@ export function createLines(shell: GameShell): GameController {
     if (!engine.play({ slot, anchor })) return;
     const placed = (events.find(e => e.type === 'placed') as Extract<GameEvent, { type: 'placed' }>).keys;
     const cleared = events.find(e => e.type === 'linesCleared') as Extract<GameEvent, { type: 'linesCleared' }> | undefined;
+    const points = events.reduce((a, e) => a + (e.type === 'score' ? e.points : 0), 0);
     placed.forEach(k => before.set(k, color));
+    shell.juice.points(board, placed, points);
     display = before;
     cheer(placed);
     render();
@@ -86,7 +88,7 @@ export function createLines(shell: GameShell): GameController {
       if (engine.status === 'lost') {
         const record = engine.state.score > bestAtStart;
         shell.end({
-          win: false, title: t('noSpace'), score: engine.state.score,
+          win: false, celebrate: record, title: t('noSpace'), score: engine.state.score,
           ribbon: record ? { label: t('newRecord') } : { label: t('yourBest'), value: H.fmt(bestOf('lines')) },
           primary: { label: t('again'), action: shell.actions.again },
         });
@@ -98,7 +100,12 @@ export function createLines(shell: GameShell): GameController {
       const dist = (k: CellKey) => { const p = board.center(k); return Math.hypot(p.x - c.x, p.y - c.y); };
       const order = [...cleared.keys].sort((a, b) => dist(a) - dist(b));
       const stagger = 40;
-      setTimeout(() => { if (display === before) board.animate(order, 'hx-anim-clear', stagger); }, dur('fast'));
+      setTimeout(() => {
+        if (display !== before) return;
+        board.animate(order, 'hx-anim-clear', stagger);
+        shell.juice.burst(board, order, k => before.get(k), stagger);
+      }, dur('fast'));
+      shell.juice.combo(cleared.lines);
       sfx('clear', cleared.lines);
       const total = dur('fast') + dur('base') + stagger * Math.min(order.length, 12);
       pending = { timer: window.setTimeout(() => { pending = null; finish(); }, total), finish };
