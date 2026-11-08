@@ -23,7 +23,7 @@ export function createSort(shell: GameShell): GameController {
   const engine = new GameEngine(new SortRules(freshSeed(), geometry));
   engine.start(shell.level);
 
-  const board = new BoardView(geometry, { cell: 26, depth: DEPTH, padTop: 56 });
+  const board = new BoardView(geometry, { cell: 26, depth: DEPTH, padTop: 56, base: true });
   shell.boardWrap.append(board.el);
   shell.hudRight.innerHTML = '<div class="hud-spacer"></div>';
   shell.sub.innerHTML = '<div class="hx-progress"><div class="hx-progress__fill" style="width:0"></div><span data-goals></span></div>';

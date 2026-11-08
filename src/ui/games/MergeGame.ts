@@ -21,7 +21,7 @@ export function createMerge(shell: GameShell): GameController {
   engine.start();
   const bestAtStart = bestOf('merge');
 
-  const board = new BoardView(geometry, { cell: 24 });
+  const board = new BoardView(geometry, { cell: 24, base: true });
   shell.boardWrap.append(board.el);
   shell.hudRight.innerHTML = iconBtn('undo', t('undo'), 'hx-ibtn--sm', 'data-undo');
   const undoBtn = shell.hudRight.querySelector<HTMLButtonElement>('[data-undo]')!;

@@ -11,9 +11,13 @@ export interface BoardViewOptions {
   depth?: number;
   /** Aire extra arriba del tablero (pilas altas de Sort). */
   padTop?: number;
+  /** Plataforma de piedra con huecos hundidos (board({ base: true }) del sistema). */
+  base?: boolean;
 }
 
 const toPt = (p: Point, s: number): H.Pt => [p.x * s, p.y * s];
+/** Cuánto crece cada celda para formar la plataforma: los mismos valores que board() del sistema (tri 1.24, cuadrado 1.12, resto 1.16). */
+const BASE_GROW: Record<number, number> = { 3: 1.24, 4: 1.12 };
 
 /** Polígono de la ficha dentro de su celda (encogido hacia el centro), en unidades del SVG. */
 export function piecePolygon(g: IGridGeometry, k: CellKey, scale: number, shrink = g.pieceScale): H.Pt[] {
@@ -54,11 +58,31 @@ export class BoardView {
     this.keys = geometry.keys().sort((a, b) => { const A = geometry.center(a), B = geometry.center(b); return A.y - B.y || A.x - B.x; });
     this.el = document.createElement('div');
     this.el.className = 'board-view';
-    const cellPolys = this.keys.map(k => geometry.polygon(k).map(p => toPt(p, this.cell)));
-    const [x, y, w, h] = boundsOf(cellPolys, 4);
     const padTop = opts.padTop ?? 0;
-    const slots = this.keys.map(k => `<polygon class="hx-slot" points="${H.pts(piecePolygon(geometry, k, this.cell, geometry.slotScale))}" style="fill:var(--cell-slot)"/>`).join('');
-    this.el.innerHTML = `<svg class="hx-board" viewBox="${x} ${y - padTop} ${w} ${h + padTop + this.depth}" role="img" aria-label="Tablero">${slots}<g class="bv-pieces"></g><g class="bv-preview"></g></svg>`;
+    const cell = this.cell;
+    let floor = '', slots = '', vb: [number, number, number, number];
+    if (opts.base) {
+      // Plataforma de piedra, igual que board({ base: true }) del sistema: sombra suave, grosor stone-600,
+      // cara stone-400 y huecos hundidos (borde stone-600, fondo stone-500 un poco más abajo).
+      const grow = BASE_GROW[geometry.sides] ?? 1.16, thick = Math.max(5, cell * 0.34);
+      const big = this.keys.map(k => piecePolygon(geometry, k, cell, grow));
+      floor = '<g style="opacity:.16">' + big.map(p => `<polygon points="${H.pts(p, thick + cell * 0.35)}" style="fill:var(--ink)"/>`).join('') + '</g>' +
+        big.map(p => `<polygon points="${H.pts(p, thick)}" style="fill:var(--stone-600)"/>`).join('') +
+        big.map(p => `<polygon points="${H.pts(p)}" style="fill:var(--stone-400)"/>`).join('');
+      slots = this.keys.map(k => {
+        const c = geometry.center(k), k2 = geometry.slotScale;
+        const inner = H.shrink(geometry.polygon(k).map(p => toPt(p, cell)), c.x * cell, c.y * cell, k2 * 0.93).map(p => [p[0], p[1] + cell * 0.08] as H.Pt);
+        return `<polygon class="hx-slot" points="${H.pts(piecePolygon(geometry, k, cell, k2))}" style="fill:var(--stone-600)"/>` +
+          `<polygon points="${H.pts(inner)}" style="fill:var(--stone-500)"/>`;
+      }).join('');
+      const [x, y, w, h] = boundsOf(big, 4 + cell * 0.4);
+      vb = [x, y, w, h + thick + cell * 0.5];
+    } else {
+      slots = this.keys.map(k => `<polygon class="hx-slot" points="${H.pts(piecePolygon(geometry, k, cell, geometry.slotScale))}" style="fill:var(--cell-slot)"/>`).join('');
+      vb = boundsOf(this.keys.map(k => geometry.polygon(k).map(p => toPt(p, cell))), 4);
+    }
+    const [x, y, w, h] = vb;
+    this.el.innerHTML = `<svg class="hx-board" viewBox="${H.f(x)} ${H.f(y - padTop)} ${H.f(w)} ${H.f(h + padTop + this.depth)}" role="img" aria-label="Tablero">${floor}${slots}<g class="bv-pieces"></g><g class="bv-preview"></g></svg>`;
     this.svg = this.el.querySelector('svg')!;
     this.pieces = this.svg.querySelector('.bv-pieces')!;
     this.previewLayer = this.svg.querySelector('.bv-preview')!;

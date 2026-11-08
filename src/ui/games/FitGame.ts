@@ -17,7 +17,7 @@ export function createFit(shell: GameShell): GameController {
   engine.start(shell.level);
   const geometry = engine.state.board.geometry;
 
-  const board = new BoardView(geometry, { cell: 26 });
+  const board = new BoardView(geometry, { cell: 26, base: true });
   shell.boardWrap.append(board.el);
   shell.boardWrap.insertAdjacentHTML('beforeend', iconBtn('retry', t('rotate'), 'hx-ibtn--sm rotate-btn', 'data-rotate'));
   const rotateBtn = shell.boardWrap.querySelector<HTMLButtonElement>('[data-rotate]')!;

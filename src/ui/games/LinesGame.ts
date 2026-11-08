@@ -20,7 +20,7 @@ export function createLines(shell: GameShell): GameController {
   engine.start();
   const bestAtStart = bestOf('lines');
 
-  const board = new BoardView(geometry, { cell: 22 });
+  const board = new BoardView(geometry, { cell: 22, base: true });
   shell.boardWrap.append(board.el);
   shell.hudRight.innerHTML = '<div class="hud-spacer"></div>';
 
