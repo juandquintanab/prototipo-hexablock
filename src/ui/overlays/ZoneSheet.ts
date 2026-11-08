@@ -20,7 +20,7 @@ export function showZoneSheet(parent: HTMLElement, game: H.GameId, onClose: () =
   sheet.addEventListener('click', e => {
     const tgt = e.target as HTMLElement;
     if (tgt.closest('[data-close]')) { sheet.remove(); onClose(); }
-    if (tgt.closest('[data-play]')) go(leveled ? { name: 'levels', game } : { name: 'game', game });
+    if (tgt.closest('[data-play]')) go(leveled ? { name: 'levels', game } : { name: 'game', game }, { curtain: !leveled });
   });
   parent.append(sheet);
   return sheet;

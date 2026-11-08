@@ -1,6 +1,7 @@
 import type { GameId } from '../../design-system/hexablock';
 import { canPlay } from '../../app/progress';
 import { t } from '../../infra/i18n';
+import { revealDelay } from '../router';
 import { el } from '../ui';
 
 /**
@@ -25,5 +26,6 @@ export function showInstruction(parent: HTMLElement, game: GameId, onDone: () =>
   };
   ov.addEventListener('pointerdown', close);
   parent.append(ov);
-  setTimeout(close, fallback ? 2200 : 1100);
+  // si llegamos tras la cortina, el tiempo de lectura empieza cuando terminó de destaparse
+  setTimeout(close, (fallback ? 2200 : 1100) + revealDelay());
 }

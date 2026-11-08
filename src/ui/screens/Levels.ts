@@ -34,7 +34,7 @@ export function LevelsScreen(r: Extract<Route, { name: 'levels' }>): Screen {
     const tgt = e.target as HTMLElement;
     if (tgt.closest('[data-back]')) { go({ name: 'map', open: game }); return; }
     const b = tgt.closest<HTMLButtonElement>('[data-level]');
-    if (b && !b.disabled) go({ name: 'game', game, level: Number(b.dataset.level) });
+    if (b && !b.disabled) go({ name: 'game', game, level: Number(b.dataset.level) }, { curtain: true });
   });
   return { el: s };
 }

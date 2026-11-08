@@ -18,6 +18,6 @@ export function HomeScreen(): Screen {
       <button class="hx-btn" data-play>${t('play')}</button>
     </div>
   </section>`);
-  s.addEventListener('click', () => { unlockAudio(); go({ name: 'map' }); });
+  s.addEventListener('click', () => { unlockAudio(); go({ name: 'map' }, { curtain: true }); });
   return { el: s };
 }
