@@ -95,8 +95,9 @@ body { display: flex; justify-content: center; }
 /* Letrerito de madera del HUD (bundle.css): ancho propio y centrado entre pausa y controles, como en GameScreen/preview. */
 .game .hx-hud { align-items: center; }
 .game .hx-hud__score { flex: 0 1 auto; min-width: 128px; max-width: 60%; }
-.game__board { position: relative; flex: 1; min-height: 0; display: grid; place-items: center; padding: var(--space-3) 0; }
-.board-view { width: 100%; height: 100%; touch-action: none; }
+.game__board { position: relative; flex: 1; min-height: 0; }
+/* El tablero ocupa exactamente su área (alto definido): el SVG se encoge para caber y nunca se mete bajo la bandeja. */
+.board-view { position: absolute; inset: var(--space-3) 0; touch-action: none; }
 .board-view .hx-board { display: block; width: 100%; height: 100%; overflow: visible; }
 .hx-board .hx-piece, .hx-board .stack-run, .bv-preview { transform-box: fill-box; transform-origin: center; }
 .rotate-btn { position: absolute; right: 0; bottom: var(--space-2); }
