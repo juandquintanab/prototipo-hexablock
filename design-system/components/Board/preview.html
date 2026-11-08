@@ -1,0 +1,28 @@
+<!-- @dsCard group="Tablero" height=520 -->
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Board</title></head>
+<body style="margin:0">
+<div class="hx" style="padding:16px">
+
+<div class="hx-row" style="justify-content:center;align-items:flex-start;gap:20px" id="r"></div>
+<div class="hx-ground hx-ground--panel hx-row" style="justify-content:center;margin-top:20px;gap:28px" id="st"></div>
+</div>
+<script>
+var H = window.HexaBlock;
+
+var P=H.PIECES,r=document.getElementById('r');
+[['hex','Hexágono · 6 vecinas','lines'],['square','Cuadrado · 4 vecinas','merge'],['tri','Triángulo · 3 vecinas','fit']].forEach(function(g,j){
+ var b=H.board({geo:g[0],size:2,cell:g[0]==='tri'?17:g[0]==='square'?15:17,fill:function(c,i){return (i*5+j)%4===0?P[(i*3+j)%8]:null;}});
+ r.insertAdjacentHTML('beforeend','<div class="hx-col"><div class="hx-screen hx-screen--'+g[2]+'" style="width:230px;padding:18px">'+b+'</div><div class="hx-label">'+g[1]+'</div></div>');});
+function one(kind){var c=H.cellGeom('hex',0,0,24),d=5,p,svg='';
+ if(kind==='vacía') svg='<polygon points="'+H.pts(c.poly.map(function(q){return[q[0]*.9,q[1]*.9]}))+'" style="fill:var(--cell-slot)"/>';
+ else{p=H.piecePoly(c,6,'hex',d);var col={ocupada:'piece-blue',válida:'piece-green',inválida:'piece-red',resaltada:'piece-yellow'}[kind];
+  svg='<polygon points="'+H.pts(c.poly.map(function(q){return[q[0]*.9,q[1]*.9]}))+'" style="fill:var(--cell-slot)"/>';
+  var g=H.prism(p,col,d,kind==='resaltada'?' class="hx-hl"':'');
+  if(kind==='válida'||kind==='inválida') g='<g style="opacity:.55">'+g+'</g>';
+  svg+=g;}
+ return '<div class="hx-col"><svg width="64" height="64" viewBox="-28 -28 56 60" class="'+(kind==='inválida'?'shake':'')+'">'+svg+'</svg><div class="hx-label">'+kind+'</div></div>';}
+var st=document.getElementById('st');['vacía','ocupada','válida','inválida','resaltada'].forEach(function(k){st.insertAdjacentHTML('beforeend',one(k));});
+setInterval(function(){var s=st.querySelector('.shake');if(s)H.replay(s,'hx-anim-shake');},1800);
+</script>
+</body></html>

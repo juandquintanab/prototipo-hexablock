@@ -1,0 +1,27 @@
+<!-- @dsCard group="Movimiento" height=640 -->
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Motion</title></head>
+<body style="margin:0">
+<div class="hx" style="padding:16px">
+
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px" id="g"></div>
+</div>
+<script>
+var H = window.HexaBlock;
+
+var g=document.getElementById('g'),P=H.PIECES;
+function card(title,token,stage,run){var id='m'+Math.random().toString(36).slice(2,7);
+ g.insertAdjacentHTML('beforeend','<div class="hx-ground hx-ground--panel" style="padding:14px;display:grid;gap:8px"><div style="font:400 17px/1.2 var(--font-display)">'+title+'</div><div class="hx-label">'+token+'</div><div id="'+id+'" style="height:110px;display:grid;place-items:center;overflow:hidden">'+stage+'</div><button class="hx-btn hx-btn--secondary" style="min-width:0;min-height:38px;padding:8px 14px;font-size:14px">Repetir</button></div>');
+ var box=document.getElementById(id);box.parentNode.querySelector('button').onclick=function(){run(box);};setTimeout(function(){run(box);},300);}
+card('Letrero que cae','dur-sign · ease-bounce','<div class="hx-sign" style="width:150px;margin-top:20px"><div class="hx-sign__body" style="padding:14px">¡Pausa!</div></div>',function(b){H.replay(b.firstChild,'hx-anim-drop');});
+card('Estrellas','dur-sign · 220ms entre cada una','<div class="hx-stars">'+H.star(true,34)+H.star(true,40)+H.star(true,34)+'</div>',function(b){H.replay(b.firstChild,'is-playing');});
+card('Conteo del puntaje','dur-slow','<div style="font:400 52px/1 var(--font-display)">0</div>',function(b){H.countUp(b.firstChild,8192,900);});
+card('Botón que se hunde','dur-tap · lip-md','<button class="hx-btn">Jugar</button>',function(b){var x=b.firstChild;x.classList.add('is-pressed');setTimeout(function(){x.classList.remove('is-pressed');},160);});
+card('Ficha que encaja','dur-fast · ease-bounce',H.shape({sides:6,size:60,color:'piece-teal'}),function(b){H.replay(b.firstChild,'hx-anim-snap');});
+card('Línea que explota','dur-base · ease-in, 40ms entre fichas','<div style="display:flex;gap:2px">'+[0,1,2,3,4].map(function(i){return H.shape({sides:6,size:34,color:P[i]});}).join('')+'</div>',function(b){var c=b.firstChild.children;for(var i=0;i<c.length;i++)(function(e,i){e.style.animation='none';void e.offsetWidth;e.style.animation='';e.style.animationDelay=(i*40)+'ms';H.replay(e,'hx-anim-clear');setTimeout(function(){e.classList.remove('hx-anim-clear');},900);})(c[i],i);});
+card('Fusión','dur-fast · ease-out','<div style="display:flex;gap:4px;align-items:center"><span>'+H.mergeTile(32,{size:56})+'</span><span>'+H.mergeTile(32,{size:56})+'</span></div>',function(b){var w=b.firstChild;w.innerHTML='<span>'+H.mergeTile(32,{size:56})+'</span><span>'+H.mergeTile(32,{size:56})+'</span>';var a=w.children[0],c=w.children[1];a.style.transition='transform 160ms cubic-bezier(.22,1,.36,1)';void a.offsetWidth;a.style.transform='translateX(60px)';setTimeout(function(){w.innerHTML='<span class="hx-anim-bump" style="display:inline-block">'+H.mergeTile(64,{size:56})+'</span>';},170);});
+card('Cascada (Sort)','dur-base por ficha','<div style="display:flex;gap:18px;align-items:flex-end"><span id="cs1"></span><span id="cs2"></span></div>',function(b){var a=['piece-pink','piece-blue','piece-blue'],c=['piece-blue'],s1=b.querySelector('#cs1'),s2=b.querySelector('#cs2');function r(){s1.innerHTML=H.stack(a,{size:44});s2.innerHTML=H.stack(c,{size:44});}r();var k=0;var t=setInterval(function(){if(a[a.length-1]!=='piece-blue'){clearInterval(t);return;}c.push(a.pop());r();H.replay(s2.firstChild,'hx-anim-bump');},280);});
+card('Movimiento inválido','dur-base · shake',H.shape({sides:6,size:60,color:'piece-red'}),function(b){H.replay(b.firstChild,'hx-anim-shake');});
+card('Mascota viva','2.4s respira · 3.6s parpadea',H.mascot({size:80}),function(b){b.firstChild.classList.add('is-alive');});
+</script>
+</body></html>

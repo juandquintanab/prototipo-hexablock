@@ -1,0 +1,37 @@
+<!-- @dsCard group="Catálogo de figuras" height=640 -->
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ShapeCatalog</title></head>
+<body style="margin:0">
+<div class="hx" style="padding:16px">
+
+<div class="hx-ground hx-ground--panel" style="display:grid;gap:18px;max-width:760px;margin:auto">
+ <div><div class="hx-label" style="margin-bottom:8px">Tablero · cambia las reglas</div><div class="hx-row" id="geo" style="gap:10px"></div></div>
+ <div><div class="hx-label" style="margin-bottom:8px">Ficha · cambia cómo se ve</div><div class="hx-row" id="sides" style="gap:8px"></div></div>
+ <div class="hx-row" style="justify-content:center;align-items:center;gap:28px">
+   <div class="hx-screen hx-screen--merge" style="width:300px" id="pv"></div>
+   <div class="hx-col"><div id="m"></div><div id="cap" style="font:400 18px/1.2 var(--font-display);text-align:center"></div><div class="hx-label" id="rule"></div></div>
+ </div>
+</div>
+</div>
+<script>
+var H = window.HexaBlock;
+
+var state={geo:'hex',sides:6},P=H.PIECES;
+var GEO=[['tri','Triángulo',3,'3 ejes · giros de 120°'],['square','Cuadrado',4,'2 ejes · 4 direcciones'],['hex','Hexágono',6,'3 ejes · 6 direcciones']];
+var NAMES={3:'Triángulo',4:'Cuadrado',5:'Pentágono',6:'Hexágono',7:'Heptágono',8:'Octágono',9:'Eneágono',10:'Decágono'};
+function draw(){
+ document.getElementById('geo').innerHTML=GEO.map(function(g){return '<button class="hx-choice" data-geo="'+g[0]+'" aria-pressed="'+(state.geo===g[0])+'" style="min-width:110px">'+H.shape({sides:g[2],size:40,color:'game-merge'})+g[1]+'</button>';}).join('');
+ var s='';for(var n=3;n<=10;n++) s+='<button class="hx-choice" data-sides="'+n+'" aria-pressed="'+(state.sides===n)+'">'+H.shape({sides:n,size:34,color:'piece-purple'})+n+'</button>';
+ document.getElementById('sides').innerHTML=s;
+ document.getElementById('pv').innerHTML=H.board({geo:state.geo,size:2,cell:state.geo==='tri'?18:state.geo==='square'?16:20,pieceSides:state.sides,fill:function(c,i){return (i*7)%3===0?P[i%8]:null;}});
+ document.getElementById('m').innerHTML=H.mascot({sides:state.sides,mood:'celebra',size:110});
+ document.getElementById('m').firstChild.classList.add('is-alive');
+ var g=GEO.filter(function(x){return x[0]===state.geo;})[0];
+ document.getElementById('cap').textContent='Tablero '+g[1].toLowerCase()+' · ficha '+NAMES[state.sides].toLowerCase();
+ document.getElementById('rule').textContent=g[3];
+ document.querySelectorAll('[data-geo]').forEach(function(b){b.onclick=function(){state.geo=b.dataset.geo;state.sides=+{tri:3,square:4,hex:6}[state.geo];draw();};});
+ document.querySelectorAll('[data-sides]').forEach(function(b){b.onclick=function(){state.sides=+b.dataset.sides;draw();};});
+}
+draw();
+</script>
+</body></html>

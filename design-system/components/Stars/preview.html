@@ -1,0 +1,20 @@
+<!-- @dsCard group="Letreros" height=130 -->
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stars</title></head>
+<body style="margin:0">
+<div class="hx" style="padding:16px">
+
+<div class="hx-ground hx-ground--panel hx-row" style="justify-content:center;gap:40px">
+ <div class="hx-stars" id="a"></div><div class="hx-stars" id="b"></div><div class="hx-stars" id="c"></div>
+ <button class="hx-btn hx-btn--secondary" id="p">Repetir</button>
+</div>
+</div>
+<script>
+var H = window.HexaBlock;
+
+function s(n){var o='';for(var i=0;i<3;i++)o+=H.star(i<n,i===1?48:40);return o;}
+['a','b','c'].forEach(function(id,i){document.getElementById(id).innerHTML=s(i+1);});
+function play(){['a','b','c'].forEach(function(id){H.replay(document.getElementById(id),'is-playing');});}
+document.getElementById('p').onclick=play;play();
+</script>
+</body></html>

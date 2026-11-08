@@ -1,0 +1,16 @@
+<!-- @dsCard group="Acciones" height=120 -->
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>IconButton</title></head>
+<body style="margin:0">
+<div class="hx" style="padding:16px">
+
+<div class="hx-ground hx-ground--sky hx-row" id="r" style="justify-content:center"></div>
+</div>
+<script>
+var H = window.HexaBlock;
+
+var r=document.getElementById('r');
+[['back','hx-ibtn','Atrás'],['pause','hx-ibtn hx-ibtn--round','Pausa'],['sound','hx-ibtn','Sonido'],['undo','hx-ibtn hx-ibtn--sm','Deshacer'],['redo','hx-ibtn hx-ibtn--sm','Rehacer'],['gear','hx-ibtn hx-ibtn--panel','Ajustes'],['trophy','hx-ibtn hx-ibtn--panel','Ranking']].forEach(function(b){
+ r.insertAdjacentHTML('beforeend','<button class="'+b[1]+'" aria-label="'+b[2]+'">'+H.icon(b[0],26)+'</button>');});
+</script>
+</body></html>

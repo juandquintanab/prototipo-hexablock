@@ -1,0 +1,18 @@
+<!-- @dsCard group="Movimiento" height=300 -->
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Instruction</title></head>
+<body style="margin:0">
+<div class="hx" style="padding:16px">
+
+<div class="hx-row" style="justify-content:center;gap:12px" id="r"></div>
+<div style="text-align:center;margin-top:16px"><button class="hx-btn hx-btn--secondary" id="p">Repetir</button></div>
+</div>
+<script>
+var H = window.HexaBlock;
+
+var r=document.getElementById('r');
+H.GAMES.forEach(function(g){r.insertAdjacentHTML('beforeend','<div class="hx-instruction hx-screen--'+g.id+'" style="width:196px"><span class="hx-instruction__verb">'+g.verb+'</span><span class="hx-instruction__sub">'+g.sub+'</span></div>');});
+function play(){document.querySelectorAll('.hx-instruction').forEach(function(e,i){setTimeout(function(){H.replay(e,'is-playing');},i*120);});}
+document.getElementById('p').onclick=play;play();
+</script>
+</body></html>

@@ -1,0 +1,97 @@
+/* HexaBlock Suite — tokens del sistema de diseño (generado de tokens.json) */
+:root {
+  --wood-300: #C4917F;
+  --wood-500: #A6786A;
+  --wood-700: #7E5649;
+  --trim: #DCD2E0;
+  --panel: #F6F2EE;
+  --panel-alt: #EEE6EE;
+  --panel-tan: #DCCBBE;
+  --ink: #2B2522;
+  --ink-muted: #6A5D57;
+  --white: #FFFFFF;
+  --sun-400: #FDC22E;
+  --sun-600: #DE9512;
+  --sun-ink: #5A3100;
+  --ribbon-500: #DD5136;
+  --ribbon-700: #B03A24;
+  --sky: #9AD0F0;
+  --grass: #7DBA5A;
+  --grass-700: #5E9A40;
+  --hill: #5C7A93;
+  --glass: #2E4458b3;
+  --star-on: #FFC93C;
+  --star-off: #A9A6AD;
+  --success: #2A7D3E;
+  --danger: #B8352A;
+  --disabled: #D8D0CB;
+  --disabled-ink: #5E534D;
+  --caution: #FFD12E;
+  --cell-slot: #2b252224;
+  --shade: #00000038;
+  --sheen: #ffffff59;
+  --game-lines: #F57A2A;
+  --game-lines-bg: #FFD9BC;
+  --game-fit: #36B587;
+  --game-fit-bg: #C9EEDD;
+  --game-sort: #E8708A;
+  --game-sort-bg: #F7C3C7;
+  --game-merge: #4C9BE0;
+  --game-merge-bg: #CBE4F8;
+  --piece-red: #EF5B5B;
+  --piece-orange: #F7953A;
+  --piece-yellow: #FFC93C;
+  --piece-green: #5CC86F;
+  --piece-teal: #2EC4B6;
+  --piece-blue: #4C8DF0;
+  --piece-purple: #9B6CF0;
+  --piece-pink: #F06FB0;
+  --merge-2: #F4EFE9;
+  --merge-4: #EDE1C9;
+  --merge-8: #FFD08A;
+  --merge-16: #FFB061;
+  --merge-32: #F7854A;
+  --merge-64: #E2504F;
+  --merge-128: #D94F8F;
+  --merge-256: #A65FE0;
+  --merge-512: #6F62E0;
+  --merge-1024: #3F7FE0;
+  --merge-2048: #FFC93C;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --radius-pill: 999px;
+  --shadow-sign: 0 18px 28px #0000002e;
+  --shadow-soft: 0 8px 14px #00000024;
+  --lip-sm: 3px;
+  --lip-md: 6px;
+  --lip-lg: 9px;
+  --dur-tap: 90ms;
+  --dur-fast: 160ms;
+  --dur-base: 280ms;
+  --dur-sign: 560ms;
+  --dur-slow: 900ms;
+  --ease-bounce: cubic-bezier(.34,1.56,.64,1);
+  --ease-out: cubic-bezier(.22,1,.36,1);
+  --ease-in: cubic-bezier(.55,0,1,.45);
+  --font-display: "Young Serif", "Georgia", serif;
+  --font-text: "Gelasio", "Georgia", serif;
+}
+.display-xl { font-family: var(--font-display); font-size: 60px; line-height: 0.95; font-weight: 400; }
+.display-lg { font-family: var(--font-display); font-size: 40px; line-height: 1; font-weight: 400; }
+.display-md { font-family: var(--font-display); font-size: 38px; line-height: 1.05; font-weight: 400; }
+.title { font-family: var(--font-display); font-size: 22px; line-height: 1.15; font-weight: 400; }
+.button { font-family: var(--font-display); font-size: 22px; line-height: 1; font-weight: 400; }
+.score-xl { font-family: var(--font-display); font-size: 76px; line-height: 1; font-weight: 400; }
+.score-md { font-family: var(--font-display); font-size: 30px; line-height: 1; font-weight: 400; }
+.tile { font-family: var(--font-display); font-size: 30px; line-height: 1; font-weight: 400; }
+.body { font-family: var(--font-text); font-size: 17px; line-height: 1.4; font-weight: 400; }
+.small { font-family: var(--font-text); font-size: 14px; line-height: 1.35; font-weight: 400; }
+.caps { font-family: var(--font-text); font-size: 15px; line-height: 1.2; font-weight: 400; letter-spacing: 0.03em; }

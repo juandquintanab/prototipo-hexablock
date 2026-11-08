@@ -1,0 +1,22 @@
+<!-- @dsCard group="Progreso" height=470 -->
+<!doctype html>
+<html><head><meta charset="utf-8"><title>AchievementRow</title></head>
+<body style="margin:0">
+<div class="hx" style="padding:16px">
+<div class="hx-ground hx-ground--grass" style="display:grid;justify-items:center">
+ <div class="hx-sign" style="width:min(100%,420px)">
+  <div class="hx-sign__crest"></div><div class="hx-sign__title" id="t"></div>
+  <div class="hx-sign__body" id="b" style="text-align:left"></div>
+ </div>
+</div>
+</div>
+<script>
+var H = window.HexaBlock;
+document.getElementById('t').innerHTML = H.arch('Logros', { width: 220, size: 34 });
+var rows = [['Juega 3 partidas de Hexa Sort', 66], ['Gana 5 niveles de Hexa Fit', 40], ['Llega a 512 en Hexa Merge', 15]];
+var done = [['Completa 3 líneas a la vez', 100]];
+function row(x) { return '<div class="hx-achv' + (x[1] === 100 ? ' is-done' : '') + '"><div class="hx-progress"><div class="hx-progress__fill" style="width:0" data-w="' + x[1] + '"></div><span style="position:relative">' + x[0] + '</span></div><span class="hx-achv__reward">' + H.star(x[1] === 100, 28) + '</span></div>'; }
+document.getElementById('b').innerHTML = '<div class="hx-achv-head">En progreso</div>' + rows.map(row).join('') + '<div class="hx-achv-head" style="margin-top:18px">Completados</div>' + done.map(row).join('');
+setTimeout(function () { document.querySelectorAll('[data-w]').forEach(function (e) { e.style.width = e.dataset.w + '%'; }); }, 200);
+</script>
+</body></html>

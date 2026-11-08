@@ -1,0 +1,28 @@
+<!-- @dsCard group="Letreros" height=560 -->
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Signboard</title></head>
+<body style="margin:0">
+<div class="hx" style="padding:16px">
+
+<div class="hx-ground hx-ground--sky" style="display:grid;gap:56px;justify-items:center">
+ <div class="hx-sign" id="s1" style="width:320px">
+  <span class="hx-sign__post hx-sign__post--l"></span><span class="hx-sign__post hx-sign__post--r"></span>
+  <div class="hx-sign__crest"></div><div class="hx-sign__title" id="t1"></div>
+  <div class="hx-sign__body">
+    <div class="hx-stars" id="st"></div>
+    <div id="sc" style="font:400 72px/1 var(--font-display);margin:8px 0 10px">0</div>
+    <div class="hx-ribbon-wrap"><div class="hx-ribbon"><span>Tu mejor</span><span>8 192</span></div></div>
+    <div class="hx-row" style="justify-content:center;margin-top:18px"><button class="hx-btn" id="again">Otra vez</button><button class="hx-btn hx-btn--secondary">Mapa</button></div>
+  </div>
+ </div>
+</div>
+</div>
+<script>
+var H = window.HexaBlock;
+
+document.getElementById('t1').innerHTML=H.arch('¡Victoria!',{width:240,size:34});
+var st=document.getElementById('st');st.innerHTML=H.star(true,44)+H.star(true,52)+H.star(false,44);
+function play(){var s=document.getElementById('s1');H.replay(s,'hx-anim-drop');H.replay(st,'is-playing');H.countUp(document.getElementById('sc'),4820,900);}
+document.getElementById('again').onclick=play;play();
+</script>
+</body></html>

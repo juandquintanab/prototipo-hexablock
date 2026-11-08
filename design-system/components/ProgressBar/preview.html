@@ -1,0 +1,17 @@
+<!-- @dsCard group="Progreso" height=150 -->
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ProgressBar</title></head>
+<body style="margin:0">
+<div class="hx" style="padding:16px">
+
+<div class="hx-ground hx-ground--panel" style="display:grid;gap:22px">
+ <div class="hx-progress"><div class="hx-progress__fill" id="f" style="width:0"></div><span>Meta 4 / 6 pilas</span></div>
+ <div><div class="hx-label" style="margin-bottom:8px">Tiempo (Hexa Fit)</div><div class="hx-timer is-running"><div class="hx-timer__fill"></div></div></div>
+</div>
+</div>
+<script>
+var H = window.HexaBlock;
+
+setTimeout(function(){document.getElementById('f').style.width='66%';},120);
+</script>
+</body></html>

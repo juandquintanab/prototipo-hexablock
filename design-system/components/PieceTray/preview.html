@@ -1,0 +1,16 @@
+<!-- @dsCard group="Tablero" height=170 -->
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PieceTray</title></head>
+<body style="margin:0">
+<div class="hx" style="padding:16px">
+
+<div class="hx-screen hx-screen--lines" style="width:auto"><div class="hx-tray"><div class="hx-tray__in" id="t"></div></div></div>
+</div>
+<script>
+var H = window.HexaBlock;
+
+var t=document.getElementById('t');
+[[[0,0],[1,0],[0,1]],[[0,0],[1,0],[2,0],[3,0]],[[0,0],[1,-1],[0,1],[1,0]]].forEach(function(cells,i){
+ t.insertAdjacentHTML('beforeend','<div class="hx-tray__slot'+(i===1?' is-used':'')+'">'+H.piece({cells:cells,color:['piece-teal','piece-orange','piece-purple'][i],cell:12})+'</div>');});
+</script>
+</body></html>

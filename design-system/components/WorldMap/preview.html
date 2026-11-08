@@ -1,0 +1,64 @@
+<!-- @dsCard group="Navegación" height=1010 -->
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>WorldMap</title></head>
+<body style="margin:0">
+<div class="hx" style="padding:16px;display:grid;gap:20px">
+  <div class="hx-map" id="map"></div>
+  <div class="hx-label" style="text-align:center">Toca un mundo para abrir su letrero</div>
+  <div class="hx-ground hx-ground--panel hx-row" style="justify-content:center;gap:10px" id="lm"></div>
+</div>
+<script>
+var H = window.HexaBlock, S = '';
+var STATS = { lines: [2, '4 820'], fit: [3, '12 / 15'], sort: [1, '5 / 10'], merge: [2, '8 192'] };
+var POS = { build: [24, 92, .8], merge: [204, 150, .95], sort: [14, 262, .95], fit: [204, 378, .95], lines: [14, 488, .95] };
+function sign(x, y, title, stars) {
+  var h = stars == null ? 40 : 54;
+  var s = '<g transform="translate(' + x + ' ' + y + ')"><rect x="0" y="3" width="124" height="' + h + '" rx="8" style="fill:var(--wood-700)"/><rect x="0" y="0" width="124" height="' + h + '" rx="8" style="fill:var(--wood-500)"/>' +
+    '<rect x="5" y="5" width="114" height="' + (h - 10) + '" rx="5" style="fill:var(--panel)"/>' +
+    '<text x="62" y="' + (stars == null ? 21 : 19) + '" text-anchor="middle" dominant-baseline="central" style="font-family:var(--font-display);font-size:15px;fill:var(--ink)">' + title + '</text>';
+  if (stars != null) for (var i = 0; i < 3; i++) s += '<g transform="translate(' + (37 + i * 17) + ' ' + (29 - (i === 1 ? 2 : 0)) + ')">' + H.star(i < stars, 16) + '</g>';
+  return s + '</g>';
+}
+/* fondo: cielo, nubes, montañas, isla */
+S += '<rect width="360" height="700" style="fill:var(--sky)"/>';
+S += '<ellipse cx="70" cy="60" rx="34" ry="12" style="fill:var(--panel)"/><ellipse cx="96" cy="52" rx="22" ry="12" style="fill:var(--panel)"/><ellipse cx="290" cy="90" rx="30" ry="10" style="fill:var(--panel)"/>';
+S += '<path d="M-20 200 L60 110 L130 190 L200 100 L290 180 L380 120 L380 230 L-20 230 Z" style="fill:var(--hill)"/>';
+S += '<path d="M-10 190 C 80 150, 280 140, 370 180 L370 710 L-10 710 Z" style="fill:var(--grass)"/>';
+S += '<path d="M-10 420 C 120 400, 240 440, 370 400 L370 710 L-10 710 Z" style="fill:var(--grass-700);opacity:.35"/>';
+/* camino de piedras hexagonales */
+var path = [[200, 676], [226, 640], [205, 604], [250, 572], [262, 520], [214, 476], [160, 466], [115, 444], [96, 400], [130, 366], [185, 350], [240, 330], [262, 290], [236, 252], [180, 236], [130, 214], [104, 180]];
+path.forEach(function (p) { S += '<polygon points="' + H.pts(H.ngon(6, 11, p[0], p[1], 0)) + '" style="fill:var(--panel-tan)"/>'; });
+/* mundos */
+Object.keys(POS).forEach(function (id) {
+  var p = POS[id], g = H.GAMES.filter(function (x) { return x.id === id; })[0];
+  S += '<g class="hx-map__world" data-id="' + id + '" tabindex="0" role="button" aria-label="' + (g ? g.world : 'En construcción') + '"><g transform="translate(' + p[0] + ' ' + p[1] + ') scale(' + p[2] + ')">' + H.LANDMARKS[id]() + '</g>' +
+    sign(p[0] + 6, p[1] + 110 * p[2] + 4, g ? g.world : 'Próximamente', g ? STATS[id][0] : null) + '</g>';
+});
+/* cinta de obra sobre el mundo en construcción */
+S += '<g transform="translate(30 166)"><rect width="104" height="12" rx="3" style="fill:var(--caution)"/>';
+for (var k = 0; k < 7; k++) S += '<polygon points="' + (k * 16 + 4) + ',0 ' + (k * 16 + 12) + ',0 ' + (k * 16 + 4) + ',12 ' + (k * 16 - 4) + ',12" style="fill:var(--ink)"/>';
+S += '</g>';
+S += '<g transform="translate(150 620)">' + H.mascot({ size: 52 }) + '</g>';
+var map = document.getElementById('map');
+map.innerHTML = '<svg class="hx-map__art" viewBox="0 0 360 700" role="img" aria-label="Mapa de mundos">' + S + '</svg>' +
+  '<div class="hx-map__hud"><span class="hx-counter">' + H.star(true, 24) + '8</span><button class="hx-ibtn hx-ibtn--sm hx-ibtn--panel" aria-label="Ajustes">' + H.icon('gear', 22) + '</button></div><div class="hx-map__sheet" id="sheet"></div>';
+map.querySelector('.hx-mascot').classList.add('is-alive');
+var CLOSE = '<button class="hx-ibtn hx-ibtn--sm hx-ibtn--panel" data-close aria-label="Cerrar" style="position:absolute;right:10px;top:-34px;z-index:3">' + H.icon('close', 20) + '</button>';
+map.addEventListener('click', function (e) { if (e.target.closest('[data-close]')) { document.getElementById('sheet').innerHTML = ''; map.querySelectorAll('.is-selected').forEach(function (w) { w.classList.remove('is-selected'); }); } });
+function open(id) {
+  map.querySelectorAll('.hx-map__world').forEach(function (w) { w.classList.toggle('is-selected', w.dataset.id === id); });
+  var sh = document.getElementById('sheet'), g = H.GAMES.filter(function (x) { return x.id === id; })[0];
+  if (!g) { sh.innerHTML = '<div class="hx-sign hx-anim-drop">' + CLOSE + '<div class="hx-sign__crest"></div><div class="hx-sign__title">' + H.arch('Pronto', { width: 200, size: 30 }) + '</div><div class="hx-sign__body"><p class="hx-label" style="margin:0 0 4px">Aquí llegará la quinta variante</p><p style="margin:0;font-size:16px">El motor ya está listo para un juego nuevo.</p></div></div>'; return; }
+  var st = ''; for (var i = 0; i < 3; i++) st += H.star(i < STATS[id][0], i === 1 ? 34 : 28);
+  sh.innerHTML = '<div class="hx-sign hx-anim-drop">' + CLOSE + '<div class="hx-sign__crest"></div><div class="hx-sign__title">' + H.arch(g.world, { width: 240, size: 28 }) + '</div>' +
+    '<div class="hx-sign__body" style="padding-top:30px"><div class="hx-label" style="margin-bottom:6px">' + g.name + '</div><div class="hx-stars is-playing">' + st + '</div>' +
+    '<div class="hx-ribbon-wrap" style="margin-top:10px"><div class="hx-ribbon"><span>' + (id === 'fit' || id === 'sort' ? 'Niveles' : 'Tu mejor') + '</span><span>' + STATS[id][1] + '</span></div></div>' +
+    '<button class="hx-btn" style="margin-top:12px">Jugar</button></div></div>';
+}
+map.querySelectorAll('.hx-map__world').forEach(function (w) { w.addEventListener('click', function () { open(w.dataset.id); }); w.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(w.dataset.id); } }); });
+
+/* figuritas sueltas */
+var lm = document.getElementById('lm');
+['lines', 'fit', 'sort', 'merge', 'build'].forEach(function (id) { var g = H.GAMES.filter(function (x) { return x.id === id; })[0]; lm.insertAdjacentHTML('beforeend', '<div class="hx-col" style="gap:4px">' + H.landmark(id, 120) + '<span style="font:400 17px/1.1 var(--font-display)">' + (g ? g.world : 'En construcción') + '</span><span class="hx-label">' + (g ? g.name : 'Quinta variante') + '</span></div>'); });
+</script>
+</body></html>

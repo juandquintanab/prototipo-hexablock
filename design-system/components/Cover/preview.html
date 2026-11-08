@@ -1,0 +1,49 @@
+<!-- @dsCard height=288 -->
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Cover</title>
+<style>
+html,body{margin:0}
+.cv{position:relative;width:960px;height:288px;background:var(--sky);overflow:hidden;font-family:var(--font-display);font-variation-settings:'SOFT' 100}
+.slab{fill:var(--wood-500)} .slab-lip{fill:var(--wood-700)}
+.sun{fill:var(--sun-400)} .sun-lip{fill:var(--sun-600)}
+.merge{fill:var(--game-merge)} .merge-lip{fill:var(--game-merge)}
+.fit{fill:var(--game-fit)} .fit-lip{fill:var(--game-fit)}
+.sort{fill:var(--game-sort)} .sort-lip{fill:var(--game-sort)}
+.wood{fill:var(--wood-500)} .wood-lip{fill:var(--wood-700)}
+.shade{fill:var(--shade)}
+.name{position:absolute;left:40px;bottom:58px;max-width:440px;margin:0;font-size:84px;line-height:.95;font-weight:400;color:var(--ink)}
+.tag{position:absolute;left:42px;bottom:28px;max-width:440px;margin:0;font-size:14px;font-weight:600;color:var(--ink)}
+</style></head>
+<body>
+<div class="cv">
+<svg width="960" height="288" viewBox="0 0 960 288" aria-hidden="true">
+<!--
+ blocks: sun-400, game-merge, game-fit, game-sort, wood-500 as flat hex tiles r=space-6 (32px)
+ arrangement: offset honeycomb from x=600 bleeding off the right and bottom edges, over the sky ground
+ pattern: literal motif (the hexagon board) - the README names the hexagon as the brand motif, so the tiles are the board itself
+ scales: radius 32 = space-6, gap 3px each side; flat fills, like the board pieces
+-->
+<g><polygon class="sun" points="600.0,11.0 625.1,25.5 625.1,54.5 600.0,69.0 574.9,54.5 574.9,25.5"/>
+<polygon class="merge" points="655.4,11.0 680.5,25.5 680.5,54.5 655.4,69.0 630.3,54.5 630.3,25.5"/>
+<polygon class="sun" points="710.9,11.0 736.0,25.5 736.0,54.5 710.9,69.0 685.7,54.5 685.7,25.5"/>
+<polygon class="fit" points="766.3,11.0 791.4,25.5 791.4,54.5 766.3,69.0 741.2,54.5 741.2,25.5"/>
+<polygon class="wood" points="821.7,11.0 846.8,25.5 846.8,54.5 821.7,69.0 796.6,54.5 796.6,25.5"/>
+<polygon class="wood" points="627.7,59.0 652.8,73.5 652.8,102.5 627.7,117.0 602.6,102.5 602.6,73.5"/>
+<polygon class="sort" points="683.1,59.0 708.3,73.5 708.3,102.5 683.1,117.0 658.0,102.5 658.0,73.5"/>
+<polygon class="sun" points="738.6,59.0 763.7,73.5 763.7,102.5 738.6,117.0 713.4,102.5 713.4,73.5"/>
+<polygon class="merge" points="794.0,59.0 819.1,73.5 819.1,102.5 794.0,117.0 768.9,102.5 768.9,73.5"/>
+<polygon class="sun" points="849.4,59.0 874.5,73.5 874.5,102.5 849.4,117.0 824.3,102.5 824.3,73.5"/>
+<polygon class="fit" points="600.0,107.0 625.1,121.5 625.1,150.5 600.0,165.0 574.9,150.5 574.9,121.5"/>
+<polygon class="sun" points="655.4,107.0 680.5,121.5 680.5,150.5 655.4,165.0 630.3,150.5 630.3,121.5"/>
+<polygon class="wood" points="710.9,107.0 736.0,121.5 736.0,150.5 710.9,165.0 685.7,150.5 685.7,121.5"/>
+<polygon class="sort" points="766.3,107.0 791.4,121.5 791.4,150.5 766.3,165.0 741.2,150.5 741.2,121.5"/>
+<polygon class="merge" points="821.7,107.0 846.8,121.5 846.8,150.5 821.7,165.0 796.6,150.5 796.6,121.5"/>
+<polygon class="merge" points="683.1,155.0 708.3,169.5 708.3,198.5 683.1,213.0 658.0,198.5 658.0,169.5"/>
+<polygon class="fit" points="738.6,155.0 763.7,169.5 763.7,198.5 738.6,213.0 713.4,198.5 713.4,169.5"/>
+<polygon class="sun" points="794.0,155.0 819.1,169.5 819.1,198.5 794.0,213.0 768.9,198.5 768.9,169.5"/>
+<polygon class="wood" points="849.4,155.0 874.5,169.5 874.5,198.5 849.4,213.0 824.3,198.5 824.3,169.5"/></g>
+</svg>
+<p class="name">HexaBlock Suite</p>
+<p class="tag">Cuatro juegos, un solo motor. Letreros de madera, fichas con relieve.</p>
+</div>
+</body></html>
