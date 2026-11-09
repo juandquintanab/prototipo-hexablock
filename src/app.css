@@ -139,3 +139,63 @@ body { display: flex; justify-content: center; }
   .result-score { font-size: 56px; }
   .home__hexi .hx-mascot { width: 110px; height: auto; }
 }
+
+/* Tutorial "Cómo jugar": letrero con 3 pasos animados */
+.tutorial { z-index: 25; }
+.tut-body { min-height: 268px; }
+.tut-step { display: grid; justify-items: center; gap: var(--space-2); }
+.tut-step--in { animation: tut-in var(--dur-base) var(--ease-out) both; }
+.tut-step--back { animation: tut-back var(--dur-base) var(--ease-out) both; }
+@keyframes tut-in { from { transform: translateX(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes tut-back { from { transform: translateX(-40px); opacity: 0; } to { transform: none; opacity: 1; } }
+.tut-title { font: 400 24px/1.1 var(--font-display); font-variant-numeric: lining-nums; color: var(--ink); margin-top: var(--space-1); }
+.tut-text { margin: 0; min-height: 3.9em; font: 400 16px/1.3 var(--font-display); font-variant-numeric: lining-nums; color: var(--ink-muted); max-width: 280px; }
+.tut-dots { display: flex; justify-content: center; gap: var(--space-2); margin-top: var(--space-3); }
+.tut-dot { width: 12px; height: 12px; border-radius: 50%; background: var(--trim); cursor: pointer; transition: transform var(--dur-fast) var(--ease-bounce), background var(--dur-fast) var(--ease-out); }
+.tut-dot.is-on { background: var(--sun-400); box-shadow: 0 2px 0 var(--sun-600); transform: scale(1.25); }
+.tut-actions { margin-top: var(--space-5); }
+
+/* Escenario de cada ilustración */
+.tut-stage { position: relative; width: 220px; height: 150px; display: grid; place-items: center; }
+.tut-stage .hx-board { width: 150px; height: auto; max-height: 140px; display: block; }
+.tut-float { position: absolute; left: 50%; top: 0; }
+.tut-drop { animation: tut-drop 2.4s var(--ease-out) infinite; }
+.tut-drop--short { animation-name: tut-drop-short; }
+@keyframes tut-drop { 0% { transform: translate(-50%, 110px) scale(.8); opacity: 0; } 15% { opacity: 1; } 55%, 75% { transform: translate(-50%, 40px) scale(1); opacity: 1; } 100% { transform: translate(-50%, 40px) scale(1); opacity: 0; } }
+@keyframes tut-drop-short { 0% { transform: translate(-50%, 100px) scale(.8); opacity: 0; } 15% { opacity: 1; } 55%, 75% { transform: translate(-50%, 30px) scale(1); opacity: 1; } 100% { transform: translate(-50%, 30px) scale(1); opacity: 0; } }
+.tut-stage .tut-clear { animation: tut-clear 2s var(--ease-in) infinite; transform-box: fill-box; transform-origin: center; }
+@keyframes tut-clear { 0%, 35% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.25); opacity: 1; } 70% { transform: scale(0); opacity: 0; } 85% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+.tut-combo { position: absolute; left: 50%; top: 46%; transform: translate(-50%, -50%) rotate(-4deg); font: 400 34px/1 var(--font-display); font-variant-numeric: lining-nums; color: var(--sun-400); paint-order: stroke fill; -webkit-text-stroke: 7px var(--wood-700); text-shadow: 0 5px 0 var(--wood-700); white-space: nowrap; animation: tut-combo 2s var(--ease-bounce) infinite; }
+@keyframes tut-combo { 0%, 40% { transform: translate(-50%, -50%) scale(.2) rotate(-12deg); opacity: 0; } 55%, 85% { transform: translate(-50%, -50%) scale(1) rotate(-4deg); opacity: 1; } 100% { transform: translate(-50%, -70%) scale(1); opacity: 0; } }
+.tut-hexi { position: absolute; right: -6px; bottom: -6px; }
+.tut-hexi .hx-mascot { display: block; }
+.tut-turn { animation: tut-turn 3.6s infinite; }
+@keyframes tut-turn { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.tut-tap { position: absolute; left: 50%; top: 50%; width: 34px; height: 34px; margin: -17px 0 0 -17px; border-radius: 50%; border: 4px solid var(--ink); opacity: 0; animation: tut-tap 1.2s var(--ease-out) infinite; }
+@keyframes tut-tap { 0% { transform: scale(.4); opacity: .7; } 100% { transform: scale(1.6); opacity: 0; } }
+.tut-pair { display: flex; gap: 46px; align-items: flex-end; }
+.tut-hop { position: absolute; left: 50%; top: 22px; animation: tut-hop 1.8s var(--ease-out) infinite; }
+@keyframes tut-hop { 0% { transform: translate(-82px, 30px); opacity: 0; } 15% { opacity: 1; } 50% { transform: translate(-15px, -10px); } 85% { transform: translate(52px, 22px); opacity: 1; } 100% { transform: translate(52px, 22px); opacity: 0; } }
+.tut-clear-stack { animation: tut-clear-stack 2.4s var(--ease-in) infinite; transform-origin: 50% 100%; }
+@keyframes tut-clear-stack { 0%, 45% { transform: scale(1); opacity: 1; } 60% { transform: scale(1.12, .9); opacity: 1; } 75%, 88% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+.tut-plus { position: absolute; left: 50%; top: 40%; font: 400 32px/1 var(--font-display); font-variant-numeric: lining-nums; color: var(--white); paint-order: stroke fill; -webkit-text-stroke: 6px var(--wood-700); animation: tut-plus 2.4s var(--ease-out) infinite; }
+@keyframes tut-plus { 0%, 62% { transform: translate(-50%, 0); opacity: 0; } 72% { transform: translate(-50%, -10px); opacity: 1; } 100% { transform: translate(-50%, -50px); opacity: 0; } }
+.tut-arrows { position: absolute; }
+.tut-arrow { animation: tut-arrow 1.4s var(--ease-out) infinite; }
+@keyframes tut-arrow { 0%, 100% { transform: translateX(-6px); opacity: .35; } 50% { transform: translateX(4px); opacity: 1; } }
+.tut-center .hx-tile, .tut-float-soft .hx-tile { display: block; }
+.tut-float-soft { animation: hx-float 2.2s ease-in-out infinite; }
+.tut-merge { position: relative; width: 140px; height: 60px; }
+.tut-merge > span { position: absolute; top: 0; }
+.tut-merge .hx-tile { display: block; }
+.tut-merge__a { left: 4px; animation: tut-merge-a 2.4s var(--ease-out) infinite; }
+.tut-merge__b { left: 84px; animation: tut-merge-b 2.4s linear infinite; }
+.tut-merge__c { left: 84px; opacity: 0; animation: tut-merge-c 2.4s var(--ease-bounce) infinite; }
+@keyframes tut-merge-a { 0%, 20% { transform: none; opacity: 1; } 45% { transform: translateX(80px); opacity: 1; } 46%, 100% { transform: translateX(80px); opacity: 0; } }
+@keyframes tut-merge-b { 0%, 45% { opacity: 1; } 46%, 100% { opacity: 0; } }
+@keyframes tut-merge-c { 0%, 45% { transform: scale(.3); opacity: 0; } 60%, 92% { transform: scale(1); opacity: 1; } 100% { transform: scale(1); opacity: 0; } }
+
+/* Botón "¿Cómo jugar?" junto a JUGAR en el letrero de zona */
+.zone-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-2); margin-top: var(--space-3); }
+.zone-actions .hx-btn { min-width: 0; }
+.zone-actions .btn-small { font-size: 16px; }

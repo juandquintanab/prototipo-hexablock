@@ -18,6 +18,8 @@ export interface Progress {
   shape: Shape;
   byShape: Record<Shape, ShapeProgress>;
   stats: { linesMaxCombo: number; sortGoalsTotal: number };
+  /** Tutorial 'Cómo jugar' ya visto por juego (no se vuelve a abrir solo). */
+  tutorialSeen: Record<ZoneGame, boolean>;
 }
 
 const KEY = 'hexablock-proto-v2';
@@ -36,6 +38,7 @@ function defaults(): Progress {
     shape: 'hex',
     byShape: Object.fromEntries(SHAPES.map(s => [s, emptyShape()])) as Record<Shape, ShapeProgress>,
     stats: { linesMaxCombo: 0, sortGoalsTotal: 0 },
+    tutorialSeen: { lines: false, fit: false, sort: false, merge: false },
   };
 }
 
@@ -55,6 +58,7 @@ function load(): Progress {
       settings: { ...d.settings, ...saved.settings },
       shape: SHAPES.includes(saved.shape as Shape) ? (saved.shape as Shape) : 'hex',
       stats: { ...d.stats, ...saved.stats },
+      tutorialSeen: { ...d.tutorialSeen, ...saved.tutorialSeen },
     };
   }
   const v1 = loadJSON<{ settings?: Progress['settings']; shape?: { board?: string }; best?: ShapeProgress['best']; fit?: { stars: number[] }; sort?: { stars: number[] }; stats?: Progress['stats'] }>(OLD_KEY);
@@ -108,6 +112,11 @@ export function recordMerge(score: number, maxTile: number): boolean {
   save();
   return record;
 }
+/** Tutorial por juego: se abre solo la primera vez. */
+export const tutorialSeen = (g: ZoneGame): boolean => progress.tutorialSeen[g];
+export function markTutorialSeen(g: ZoneGame): void { progress.tutorialSeen[g] = true; save(); }
+export function resetTutorials(): void { (Object.keys(progress.tutorialSeen) as ZoneGame[]).forEach(g => { progress.tutorialSeen[g] = false; }); save(); }
+
 export function addSortGoals(n: number): void { progress.stats.sortGoalsTotal += n; save(); }
 
 /** Estrellas de zona del mapa, en la figura con que se juega ese juego. */

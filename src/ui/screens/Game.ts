@@ -1,6 +1,6 @@
 import * as H from '../../design-system/hexablock';
 import type { GameId } from '../../design-system/hexablock';
-import { LEVEL_COUNT } from '../../app/progress';
+import { LEVEL_COUNT, markTutorialSeen, tutorialSeen } from '../../app/progress';
 import { sfx } from '../../infra/audio';
 import { t } from '../../infra/i18n';
 import { createFit } from '../games/FitGame';
@@ -11,6 +11,7 @@ import type { GameController, GameFactory, GameShell } from '../games/types';
 import { Juice } from '../games/juice';
 import { showInstruction } from '../overlays/Instruction';
 import { showPause } from '../overlays/Pause';
+import { showTutorial } from '../overlays/Tutorial';
 import { showResult } from '../overlays/Result';
 import { go, Route, Screen } from '../router';
 import { el, esc, hexi, iconBtn } from '../ui';
@@ -126,20 +127,28 @@ export function GameScreen(r: Extract<Route, { name: 'game' }>): Screen {
     ctrl.onStart?.();
   }
 
-  q('[data-pause]').addEventListener('click', () => {
-    if (ended || paused) return;
-    paused = true;
-    ctrl.onPause?.(true);
+  // Pausa (con "¿Cómo jugar?": al cerrar el tutorial vuelve al letrero de pausa)
+  const openPause = () => {
     showPause(s, {
       resume: () => { paused = false; ctrl.onPause?.(false); },
       restart: () => { paused = false; restart(); },
       exit: leveled ? shell.actions.levels : shell.actions.map,
+      howTo: () => showTutorial(s, game, () => { markTutorialSeen(game); openPause(); }),
       exitLabel: leveled ? t('levels') : t('map'),
     });
+  };
+  q('[data-pause]').addEventListener('click', () => {
+    if (ended || paused) return;
+    paused = true;
+    ctrl.onPause?.(true);
+    openPause();
   });
 
   mount();
-  showInstruction(s, game, () => { intro = false; ctrl.onStart?.(); });
+  // la primera vez en cada juego: tutorial "Cómo jugar" y después la instrucción corta de siempre
+  const startInstruction = () => showInstruction(s, game, () => { intro = false; ctrl.onStart?.(); });
+  if (tutorialSeen(game)) startInstruction();
+  else showTutorial(s, game, () => { markTutorialSeen(game); startInstruction(); });
 
   return { el: s, destroy: () => { clearTimeout(endTimer); clearTimeout(moodTimer); cancelAnimationFrame(countFrame); ctrl.destroy(); } };
 }

@@ -4,15 +4,16 @@ import { setMusic, setSound } from '../../infra/audio';
 import { t } from '../../infra/i18n';
 import { el, signHTML, toggleHTML } from '../ui';
 
-export interface PauseActions { resume(): void; restart(): void; exit(): void; exitLabel: string }
+export interface PauseActions { resume(): void; restart(): void; exit(): void; howTo(): void; exitLabel: string }
 
-/** Letrero "Pausa": continuar, reiniciar, salir y los interruptores de sonido y música. */
+/** Letrero "Pausa": continuar, reiniciar, salir, cómo jugar y los interruptores de sonido y música. */
 export function showPause(parent: HTMLElement, a: PauseActions): void {
   const body = `
     <div class="btn-col">
       <button class="hx-btn" data-a="resume">${t('continue')}</button>
       <button class="hx-btn hx-btn--secondary" data-a="restart">${t('restart')}</button>
       <button class="hx-btn hx-btn--secondary" data-a="exit">${a.exitLabel}</button>
+      <button class="hx-btn hx-btn--secondary" data-a="howTo">${t('howTo')}</button>
     </div>
     <div class="settings-list">
       <div class="hx-setting"><span>${H.icon('sound', 22)}${t('sound')}</span>${toggleHTML('sound', t('sound'), progress.settings.sound)}</div>
@@ -25,7 +26,7 @@ export function showPause(parent: HTMLElement, a: PauseActions): void {
     const btn = target.closest<HTMLElement>('[data-a]');
     if (btn) {
       close();
-      const act = btn.dataset.a as 'resume' | 'restart' | 'exit';
+      const act = btn.dataset.a as 'resume' | 'restart' | 'exit' | 'howTo';
       a[act]();
       return;
     }
