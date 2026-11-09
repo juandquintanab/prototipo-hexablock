@@ -1,5 +1,5 @@
 import * as H from '../../design-system/hexablock';
-import { SHAPES, boardGeometry, capabilities, createGeometry } from '../../domain/geometry/GeometryFactory';
+import { SHAPES, boardGeometry, createGeometry } from '../../domain/geometry/GeometryFactory';
 import { Shape, progress, setShape } from '../../app/progress';
 import { t } from '../../infra/i18n';
 import { go, Screen } from '../router';
@@ -11,11 +11,7 @@ import { groundArt } from './art';
 function ruleText(shape: Shape): string {
   const g = createGeometry(shape);
   const axes = g.withCells(g.cells(2)).directions().length / 2;
-  return t('shapeRule', {
-    n: g.adjacent(g.origin).length,
-    lines: axes ? t('axesN', { n: axes }) : t('noLines'),
-    deg: 360 / g.rotationSteps,
-  });
+  return t('shapeRule', { n: g.adjacent(g.origin).length, lines: t('axesN', { n: axes }), deg: 360 / g.rotationSteps });
 }
 
 /**
@@ -34,10 +30,8 @@ export function CatalogScreen(): Screen {
     const shape = progress.shape;
     const choices = SHAPES.map(sh => {
       const g = createGeometry(sh);
-      const limited = !capabilities(sh).lines;
       return `<button class="hx-choice choice-shape" data-shape="${sh}" aria-pressed="${shape === sh}">
         ${H.shape({ sides: g.sides, size: 36, color: 'game-merge' })}${t(`shape.${sh}`)}
-        ${limited ? `<small class="choice-note">${t('onlySortFit')}</small>` : ''}
       </button>`;
     }).join('');
     const g = createGeometry(shape);
@@ -51,7 +45,6 @@ export function CatalogScreen(): Screen {
         </div>
         <div class="catalog__caption">${t(`shape.${shape}`)}</div>
         <div class="hx-label">${ruleText(shape)}</div>
-        ${capabilities(shape).lines ? '' : `<div class="hx-label catalog__note">${t('onlySortFit')}</div>`}
       </div>`;
     const first = !body.firstChild;
     body.innerHTML = signHTML({ title: t('shapes'), body: content, cls: first ? '' : 'no-drop' });

@@ -1,8 +1,8 @@
-/** Clave de celda: "q,r" (hexágono), "x,y" (cuadrado), "a,b" (triángulo) o "x,y,i" (pentágono). */
+/** Clave de celda: "q,r" (hexágono), "x,y" (cuadrado) o "a,b" (triángulo). */
 export type CellKey = string;
 /** Índice de dirección (0..directions().length-1). */
 export type Direction = number;
-export type Shape = 'tri' | 'square' | 'pent' | 'hex';
+export type Shape = 'tri' | 'square' | 'hex';
 export interface Point { x: number; y: number }
 
 /**

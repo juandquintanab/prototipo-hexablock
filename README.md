@@ -1,6 +1,6 @@
 # HexaBlock Suite — prototipo navegable
 
-Una app web para teléfono en vertical con cuatro juegos de tablero (Hexa Lines, Hexa Fit, Hexa Sort y Hexa Merge) sobre un solo motor genérico. El tablero y las fichas pueden ser triángulos, cuadrados, pentágonos o hexágonos (Ajustes → Figuras). Proyecto semestral de Desarrollo de Software (UCAB).
+Una app web para teléfono en vertical con cuatro juegos de tablero (Hexa Lines, Hexa Fit, Hexa Sort y Hexa Merge) sobre un solo motor genérico. El tablero y las fichas pueden ser triángulos, cuadrados o hexágonos (Ajustes → Figuras). Proyecto semestral de Desarrollo de Software (UCAB).
 
 ## Cómo correrlo
 
@@ -26,7 +26,7 @@ npm run preview  # sirve dist/ para probar el build
 ```
 src/
   domain/        motor genérico y reglas (sin DOM): HexBoard<T>, GameEngine<T,M,S>, ports, games/*
-    geometry/    IGridGeometry + Hex/Square/Triangle/Pentagon y GeometryFactory (Factory Method)
+    geometry/    IGridGeometry + Hex/Square/Triangle y GeometryFactory (Factory Method)
   app/           progreso, estrellas, logros
   infra/         localStorage, Web Audio, textos ES/EN
   ui/            pantallas, letreros, tablero SVG y controles (arrastrar, deslizar)
@@ -43,6 +43,6 @@ tests/           pruebas de cada juego y del motor
 | Hexa Sort | pila de colores | hueco de bandeja + celda | no |
 | Hexa Fit | índice de pieza o `null` | colocar / quitar / girar | ilimitado |
 
-Las reglas reciben una `IGridGeometry` y no preguntan qué figura es: Lines usa `lines()`, Merge `directions()`/`step()`, Sort `neighbors()` y Fit `rotate()`/`translate()`. El pentágono no tiene líneas rectas, así que Lines y Merge se juegan con hexágonos cuando está elegido.
+Las reglas reciben una `IGridGeometry` y no preguntan qué figura es: Lines usa `lines()`, Merge `directions()`/`step()`, Sort `neighbors()` y Fit `rotate()`/`translate()`.
 
 Lo que se decidió donde la especificación era ambigua está en [DECISIONES.md](DECISIONES.md). La especificación completa está en [PROTOTIPO.md](PROTOTIPO.md) y la guía visual en [design-system/README.md](design-system/README.md).

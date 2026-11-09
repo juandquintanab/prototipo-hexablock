@@ -22,7 +22,7 @@ export interface PlacementConfig {
   enabled(): boolean;
   /**
    * La pieza ocupa una sola celda y va en cualquiera (pilas de Sort): el ancla es la celda bajo el punto,
-   * sin traslación. Sin esto, en triángulos y pentágonos solo servirían las celdas de la misma orientación.
+   * sin traslación. Sin esto, en triángulos solo servirían las celdas de la misma orientación.
    */
   anyCell?: boolean;
 }
@@ -63,7 +63,7 @@ export class PlacementController {
 
   /**
    * Ancla para que el centroide de la pieza quede lo más cerca posible del punto.
-   * Solo vale una celda a la que la geometría pueda trasladar la referencia (en triángulos y pentágonos
+   * Solo vale una celda a la que la geometría pueda trasladar la referencia (en triángulos
    * no todas sirven), así que se buscan candidatas alrededor y se elige la mejor.
    */
   private anchorAt(slot: number, clientX: number, clientY: number): CellKey | null {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SHAPES, boardGeometry, capabilities, createGeometry } from '../src/domain/geometry/GeometryFactory';
+import { SHAPES, boardGeometry, createGeometry } from '../src/domain/geometry/GeometryFactory';
 import type { IGridGeometry } from '../src/domain/geometry/IGridGeometry';
 
 const sameSet = (a: string[], b: string[]) => expect([...a].sort()).toEqual([...b].sort());
@@ -11,7 +11,7 @@ function inner(g: IGridGeometry): string[] {
 
 describe.each(SHAPES)('geometry %s', shape => {
   const g = boardGeometry(shape, 4);
-  const expected = { hex: 6, square: 4, tri: 3, pent: 5 }[shape];
+  const expected = { hex: 6, square: 4, tri: 3 }[shape];
 
   it('should_have_expected_neighbors_when_cell_is_inside_the_board', () => {
     const ks = inner(g);
@@ -90,12 +90,6 @@ describe('lines', () => {
     lines.forEach(l => l.slice(1).forEach((k, i) => expect(g.adjacent(l[i])).toContain(k)));
   });
 
-  it('should_have_no_lines_or_directions_when_pentagon', () => {
-    const g = boardGeometry('pent', 2);
-    expect(g.lines()).toEqual([]);
-    expect(g.directions()).toEqual([]);
-    expect(capabilities('pent')).toEqual({ lines: false, directions: false });
-  });
 
   it('should_slide_along_its_line_when_stepping_in_a_direction', () => {
     for (const shape of ['hex', 'square', 'tri'] as const) {
@@ -122,7 +116,6 @@ describe('cells', () => {
     expect(boardGeometry('hex', 2).keys()).toHaveLength(19);
     expect(boardGeometry('square', 2).keys()).toHaveLength(16);
     expect(boardGeometry('tri', 2).keys()).toHaveLength(24);
-    expect(boardGeometry('pent', 2).keys()).toHaveLength(18);
   });
 });
 

@@ -118,7 +118,7 @@ describe.each(SHAPES)('Fit levels in %s', shape => {
 
 describe('Fit generator', () => {
   it('should_grow_levels_by_plan_when_shape_is_not_hexagon', () => {
-    for (const shape of ['tri', 'square', 'pent'] as const) {
+    for (const shape of ['tri', 'square'] as const) {
       const levels = new FitRules(shape).levels();
       levels.forEach((pieces, i) => {
         expect(pieces.flat()).toHaveLength(FIT_PLAN[i][0]);

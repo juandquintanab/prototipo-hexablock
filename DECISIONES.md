@@ -48,14 +48,16 @@ Puntos donde `PROTOTIPO.md` dejaba espacio a interpretación. En cada caso se el
 
 ## Figuras (cambio sobre la sección 8 de PROTOTIPO.md)
 
-El catálogo ya no es solo apariencia: hay una sola elección, **Figura** (triángulo, cuadrado, pentágono, hexágono), que es a la vez el tablero y las fichas, y cambia los juegos, la vista previa, los botones de nivel y la mascota.
+El catálogo ya no es solo apariencia: hay una sola elección, **Figura** (triángulo, cuadrado, hexágono), que es a la vez el tablero y las fichas, y cambia los juegos, la vista previa, los botones de nivel y la mascota.
+
+**Sin pentágono.** Hubo un pentágono con el teselado de El Cairo. Se quitó a pedido del usuario: sus pentágonos apuntaban en cuatro direcciones y el borde del tablero quedaba en picos, así que no se veía uniforme como las otras figuras. Pentágonos regulares iguales no cubren el plano sin huecos. Con él se fue el mecanismo que pasaba Lines y Merge a hexágono (las tres figuras que quedan sirven para los cuatro juegos), junto con su nota y su etiqueta. Si había un guardado con pentágono elegido, al abrir vuelve a hexágono.
 
 **Motor**
-- `IGridGeometry` (`src/domain/geometry/`) con `HexGeometry`, `SquareGeometry`, `TriangleGeometry` y `PentagonGeometry`. `GeometryFactory` es el Factory Method: el único lugar que sabe qué clase va con cada figura. `HexBoard<TCell>` recibe la geometría; `GameEngine` no cambió.
+- `IGridGeometry` (`src/domain/geometry/`) con `HexGeometry`, `SquareGeometry` y `TriangleGeometry`. `GeometryFactory` es el Factory Method: el único lugar que sabe qué clase va con cada figura. `HexBoard<TCell>` recibe la geometría; `GameEngine` no cambió.
 - Además de lo que pedía la interfaz agregué:
   - `adjacent` (vecinas sin límite de tablero, para generar piezas);
   - `keys`, `has` y `withCells` (una geometría "acotada" conoce sus celdas, por eso `lines()` y `step()` no reciben el tablero);
-  - `translate(cells, from, to)`, porque colocar una pieza ya no es "sumar coordenadas": en triángulos y pentágonos solo algunas celdas sirven de ancla;
+  - `translate(cells, from, to)`, porque colocar una pieza ya no es "sumar coordenadas": en triángulos solo las celdas con la misma orientación sirven de ancla;
   - `cellAt(punto)`, `origin`, `sides`, `inradius` y escalas de dibujo.
 - `rotate` es genérico (en la clase base): gira los centros alrededor de un centro de simetría del teselado y vuelve a la celda con `cellAt`. La prueba comprueba que cada giro recorre el tablero sin repetir celdas.
 - Las líneas se definen por **familias** (filas, columnas, diagonales) y se cortan donde dos celdas seguidas no son vecinas. Las direcciones de deslizamiento recorren esas mismas familias en ambos sentidos.
@@ -63,7 +65,6 @@ El catálogo ya no es solo apariencia: hay una sola elección, **Figura** (triá
 
 **Cada figura**
 - **Triángulo**: alternan arriba/abajo con las mismas medidas que `cellGeom('tri')` del sistema. Las 3 franjas son filas y dos diagonales en zigzag. Merge tiene 6 direcciones (las franjas en ambos sentidos). Giro de 120° alrededor de un vértice.
-- **Pentágono**: teselado Cairo armado sobre una cuadrícula (segmento por el centro de cada cuadrado, horizontal o vertical en damero). Con t = (√7−1)/6 los cinco lados son iguales y todos los pentágonos son congruentes. Giro de 90° alrededor de un vértice de la cuadrícula.
 
 **Tamaños de tablero**: cada figura iguala la cantidad de celdas del hexágono de ese radio.
 
@@ -72,44 +73,42 @@ El catálogo ya no es solo apariencia: hay una sola elección, **Figura** (triá
 | Hexágono | 19 | 61 |
 | Cuadrado | 4×4 = 16 (el 2048 clásico) | 8×8 = 64 |
 | Triángulo | 24 (hexágono de triángulos de lado 2) | 54 (lado 3) |
-| Pentágono | 3×3 cuadrados = 18 | no aplica |
 
 **Juegos**
-- **Piezas de Lines**: poliformas conexas de 1 a 5 celdas generadas con la semilla de la partida, en las **cuatro** figuras, también en hexágono. Ya no existe la tabla fija de PROTOTIPO.md. Pesos por tamaño: 1 → 10, 2 → 16, 3 → 18, 4 → 8, 5 → 3. Las piezas no giran, así que en triángulos una pieza solo entra en celdas con su misma orientación.
+- **Piezas de Lines**: poliformas conexas de 1 a 5 celdas generadas con la semilla de la partida, en las **tres** figuras, también en hexágono. Ya no existe la tabla fija de PROTOTIPO.md. Pesos por tamaño: 1 → 10, 2 → 16, 3 → 18, 4 → 8, 5 → 3. Las piezas no giran, así que en triángulos una pieza solo entra en celdas con su misma orientación.
 - **Merge** procesa las fichas por su distancia al borde en la dirección elegida (la más cercana primero), sin fórmulas de coordenadas.
-- **Pilas de Sort**: una pila ocupa una celda y va en **cualquier** celda vacía. Por eso el control de colocación tiene un modo `anyCell` que no usa traslación; si no, en triángulos y pentágonos solo servirían la mitad o la cuarta parte de las celdas.
+- **Pilas de Sort**: una pila ocupa una celda y va en **cualquier** celda vacía. Por eso el control de colocación tiene un modo `anyCell` que no usa traslación; si no, en triángulos solo serviría la mitad de las celdas.
 - **Fit**:
   - Hexágono conserva los niveles escritos. Las demás figuras generan 6 niveles con semilla fija: crece una figura compacta desde el origen y la parte en piezas conexas desde semillas al azar (crece siempre la más chica).
   - Plan por nivel (celdas / piezas): 7/3, 8/3, 10/3, 12/4, 15/4, 18/5, con piezas de 2 a 6 celdas.
-  - Son resolubles por construcción: cada pieza es un trozo de la figura. Hay pruebas que los resuelven en las cuatro figuras.
+  - Son resolubles por construcción: cada pieza es un trozo de la figura. Hay pruebas que los resuelven en las tres figuras.
   - La elección "hexágono a mano, el resto generado" es una tabla de datos (`HAND_MADE`), no un `if` en las reglas.
-- **Pentágono en Lines y Merge**: si la figura no tiene líneas o direcciones (se deduce de la geometría con `capabilities()`, no del nombre), esos juegos usan hexágono. La instrucción lo dice en una línea y dura 2.2 s en vez de 1.1 s para que alcance a leerse. En el catálogo, el pentágono lleva la etiqueta "Solo Sort y Fit".
 
 **Progreso**
 - Se guarda por figura en la clave `hexablock-proto-v2`. Al abrir con un guardado `v1`, ese progreso pasa al hexágono.
-- Mapa y niveles muestran el progreso de la figura con que se juega cada juego (en pentágono, Lines y Merge muestran el de hexágono).
+- Mapa y niveles muestran el progreso de la figura elegida.
 - **Logros**: cuentan el mejor resultado en cualquier figura (máximo por figura). Las estadísticas de combo y metas siguen siendo globales.
 
 **Dibujo**
 - El tablero, las piezas de la bandeja, el fantasma y la vista previa del catálogo se dibujan con `center()`/`polygon()` de la geometría.
 - Las fichas sueltas (pilas, ficha de Merge, botones de nivel, mascota) usan los helpers del sistema con `sides` de la figura.
-- `board()`/`piece()` del sistema no sirven para el pentágono Cairo, así que no se usan para el tablero.
+- El tablero no usa `board()`/`piece()` del sistema: cada geometría ya da sus propios polígonos, y así el dibujo no repite las coordenadas de cada figura.
 
 ## Rediseño visual (kit nuevo: escenas, caras, efectos, tipografía)
 
-Solo cambió la interfaz: `domain/`, `app/` (guardado), los controles de colocar y deslizar y el catálogo quedaron iguales (sin diferencias en git). Las 118 pruebas siguen en verde.
+Solo cambió la interfaz: `domain/`, `app/` (guardado), los controles de colocar y deslizar y el catálogo quedaron iguales (sin diferencias en git). Las 118 pruebas de entonces siguieron en verde (hoy son 103, sin los casos del pentágono).
 
 **PROTOTIPO.md**
 - La sección 8 del documento nuevo todavía dice que el catálogo "no afecta los juegos". Se mantiene lo ya acordado: la figura sí cambia tablero y fichas (ver "Figuras").
 - "Así vas" no aparece en el kit, en PROTOTIPO.md ni en la app, así que no hubo nada que revisar ahí.
 
 **Tablero**
-- `board({ base: true, faces })` del sistema solo sabe dibujar hexágonos, cuadrados y triángulos, no el pentágono Cairo. `BoardView` dibuja las mismas capas con las mismas medidas sobre los polígonos de cada geometría:
+- `BoardView` dibuja las mismas capas que `board({ base: true, faces })` del sistema, con las mismas medidas, sobre los polígonos de cada geometría:
   - sombra al 16%, grosor `stone-600` de `max(5, celda·0.34)` y cara `stone-400`;
   - huecos con borde `stone-600` y fondo `stone-500` hundido;
   - fichas con brillo y sombra de contacto;
   - caras con parpadeo a destiempo.
-- El crecimiento de la plataforma copia los valores de `board()`: triángulo 1.24, cuadrado 1.12 y el resto 1.16 (el pentágono usa 1.16).
+- El crecimiento de la plataforma copia los valores de `board()`: triángulo 1.24, cuadrado 1.12 y el resto 1.16.
 
 **Caras**
 - **Lines**: susto (`scared`) en las fichas de toda línea a la que le falta una celda o menos. Eso incluye las líneas que están explotando.
@@ -156,7 +155,7 @@ Los cuatro juegos se jugaron hasta el final por el flujo real (mapa, letrero, co
 - **Sort**: nivel 1 ganado.
 - **Fit**: nivel 1 resuelto con toques (girar y colocar), confeti y Hexi celebrando.
 
-La plataforma de piedra también se probó en las cuatro figuras.
+La plataforma de piedra también se probó en las cuatro figuras que había entonces (hoy son tres).
 
 ## Hexa Sort "no carga" (no se pudo reproducir)
 

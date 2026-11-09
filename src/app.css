@@ -70,13 +70,11 @@ body { display: flex; justify-content: center; }
 .catalog__label { justify-self: start; margin-top: var(--space-2); }
 .catalog__row { display: flex; gap: var(--space-2); width: 100%; justify-content: center; }
 .catalog__row--wrap { flex-wrap: wrap; }
-.choice-shape { flex: 1 1 40%; min-width: 0; }
-.choice-note { font: 400 12px/1.2 var(--font-display); font-variant-numeric: lining-nums; text-transform: uppercase; letter-spacing: .05em; }
+.choice-shape { flex: 1 1 0; min-width: 0; }
 .catalog__preview { display: flex; align-items: center; justify-content: center; gap: var(--space-3); margin-top: var(--space-3); width: 100%; }
 .catalog__board { width: auto; flex: 1; max-width: 190px; padding: var(--space-3); border-radius: var(--radius-md); }
 .catalog__board .hx-board { display: block; width: 100%; height: auto; }
 .catalog__caption { font: 400 18px/1.2 var(--font-display); font-variant-numeric: lining-nums; text-align: center; }
-.catalog__note { color: var(--ink-muted); margin-top: var(--space-2); }
 
 /* Logros */
 .achv-list { text-align: left; }
@@ -134,7 +132,6 @@ body { display: flex; justify-content: center; }
 /* Instrucción a pantalla completa */
 .overlay.instruction { border-radius: 0; z-index: 20; }
 .hx-instruction__sub { text-transform: uppercase; }
-.instruction__note { display: block; margin-top: var(--space-5); font: 400 15px/1.35 var(--font-display); font-variant-numeric: lining-nums; color: var(--ink); animation: hx-fade-up var(--dur-base) var(--ease-out) 520ms both; }
 .overlay.instruction.is-leaving { animation: fade-out var(--dur-base) var(--ease-in) forwards; }
 @keyframes fade-out { to { opacity: 0; } }
 

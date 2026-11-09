@@ -1,6 +1,6 @@
 import { loadJSON, saveJSON } from '../infra/storage';
 import type { I18nKey, Lang } from '../infra/i18n';
-import { SHAPES, capabilities, createGeometry } from '../domain/geometry/GeometryFactory';
+import { SHAPES, createGeometry } from '../domain/geometry/GeometryFactory';
 import type { IGridGeometry, Shape } from '../domain/geometry/IGridGeometry';
 
 export type { Shape };
@@ -72,19 +72,11 @@ export function save(): void { saveJSON(KEY, progress); }
 export type LevelGame = 'fit' | 'sort';
 export type ZoneGame = 'lines' | 'fit' | 'sort' | 'merge';
 
-/** Qué necesita cada juego de la geometría. */
-const NEEDS: Record<ZoneGame, 'lines' | 'directions' | null> = { lines: 'lines', merge: 'directions', fit: null, sort: null };
-
 export function setShape(s: Shape): void { progress.shape = s; save(); }
 /** Geometría de la figura elegida (sin acotar: para dibujar fichas, mascota, botones). */
 export const currentGeometry = (): IGridGeometry => createGeometry(progress.shape);
-/** ¿Puede jugarse ese juego con esa figura? (Lines necesita líneas; Merge, direcciones). */
-export function canPlay(game: ZoneGame, shape: Shape = progress.shape): boolean {
-  const need = NEEDS[game];
-  return !need || capabilities(shape)[need];
-}
-/** Figura con la que se juega: la elegida, o hexágono si esa figura no sirve para el juego. */
-export const shapeFor = (game: ZoneGame): Shape => (canPlay(game) ? progress.shape : 'hex');
+/** Figura con la que se juega ese juego: la elegida (las tres sirven para los cuatro juegos). */
+export const shapeFor = (_game: ZoneGame): Shape => progress.shape;
 const sp = (game: ZoneGame): ShapeProgress => progress.byShape[shapeFor(game)];
 
 export const bestOf = (game: 'lines' | 'merge'): number => sp(game).best[game];
