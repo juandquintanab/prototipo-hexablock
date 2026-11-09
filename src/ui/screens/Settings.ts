@@ -1,5 +1,5 @@
 import * as H from '../../design-system/hexablock';
-import { progress, save } from '../../app/progress';
+import { progress, resetTutorials, save } from '../../app/progress';
 import { setMusic, setSound } from '../../infra/audio';
 import { Lang, setLang, t } from '../../infra/i18n';
 import { go, Screen } from '../router';
@@ -15,6 +15,7 @@ export function SettingsScreen(): Screen {
     <div class="hx-setting"><span>${H.icon('music', 22)}${t('music')}</span>${toggleHTML('music', t('music'), st.music)}</div>
     <div class="hx-setting"><span>${H.icon('globe', 22)}${t('language')}</span><div class="hx-pills">${pill('es')}${pill('en')}</div></div>
     <div class="hx-setting"><span>${H.icon('shapes', 22)}${t('shapes')}</span><button class="hx-btn hx-btn--secondary btn-small" data-catalog>${t('catalog')}</button></div>
+    <div class="hx-setting"><span>${H.icon('retry', 22)}${t('tutorials')}</span><button class="hx-btn hx-btn--secondary btn-small" data-replay aria-label="${t('replayTutorialsLabel')}">${t('replayTutorials')}</button></div>
   </div>`;
   const s = el(`<section class="scr menu">
     ${groundArt()}
@@ -25,6 +26,14 @@ export function SettingsScreen(): Screen {
     const tgt = e.target as HTMLElement;
     if (tgt.closest('[data-back]')) { go({ name: 'map' }); return; }
     if (tgt.closest('[data-catalog]')) { go({ name: 'catalog' }); return; }
+    const replay = tgt.closest<HTMLButtonElement>('[data-replay]');
+    if (replay) {
+      // los tutoriales vuelven a abrirse solos la próxima vez que se entra a cada juego
+      resetTutorials();
+      replay.textContent = t('tutorialsReset');
+      replay.disabled = true;
+      return;
+    }
     const tg = tgt.closest<HTMLElement>('[data-toggle]');
     if (tg) {
       const on = tg.getAttribute('aria-checked') !== 'true';

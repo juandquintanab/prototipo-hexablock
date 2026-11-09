@@ -171,3 +171,29 @@ Lo único raro que vi: en una pestaña en segundo plano el navegador congela las
 
 ## Audio
 - Todo generado con Web Audio. La música es un bucle de 16 notas (una cada 420 ms) a volumen muy bajo. El audio se desbloquea con el primer toque en Inicio.
+
+## Logros ocultos y tutorial "Cómo jugar"
+
+**Logros**
+- `src/app/config.ts` tiene `FEATURES.achievements = false`.
+- Mientras esté en `false`:
+  - el mapa no muestra el trofeo;
+  - la ruta de Logros no se registra (si algo la pide, se va al mapa);
+  - `achievements()` devuelve una lista vacía sin calcular nada.
+- El código sigue ahí. Las estadísticas que guarda el progreso (combo máximo, metas de Sort) se siguen guardando, porque son datos de juego y no cálculo de logros.
+
+**Tutorial**
+- Es un letrero de madera con 3 pasos. Cada paso tiene una mini ilustración animada (hecha con `board`, `piece`, `stack`, `mergeTile` y `mascot` en la figura elegida), un título y una frase.
+- Navegación: puntitos de paso (tocables), SIGUIENTE, ¡ENTENDIDO! en el último paso y una X para saltar. Se puede deslizar entre pasos; en teclado, flechas y Escape.
+- **Cuándo aparece**:
+  - solo, la primera vez que se entra a cada juego, antes de la instrucción corta (que no cambió);
+  - desde "¿Cómo jugar?" en el letrero de zona;
+  - desde "¿Cómo jugar?" en Pausa (al cerrarlo vuelve al letrero de pausa).
+
+  Verlo por cualquiera de los tres caminos cuenta como visto (`tutorialSeen` en el progreso).
+- En el letrero de zona, el tutorial se abre sobre toda la app y no dentro del mapa. Si no, tocarlo cerraría el letrero (tocar fuera del letrero lo cierra).
+- **Textos ajustados a las reglas reales**:
+  - en Fit, se gira tocando **dos veces** una pieza (el primer toque la selecciona) o con el botón girar;
+  - en Sort, las fichas pasan a la vecina **que tiene más** de ese color;
+  - los ejes de Lines y las direcciones de Merge salen de la figura elegida (3 o 2 ejes; 6 o 4 direcciones).
+- **Ajustes**: la fila "Tutoriales · Ver otra vez" reinicia `tutorialSeen`. El botón cambia a "¡Listo!" para confirmar.
