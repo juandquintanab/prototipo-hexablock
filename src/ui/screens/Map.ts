@@ -1,5 +1,6 @@
 import * as H from '../../design-system/hexablock';
 import { totalStars, zoneStars } from '../../app/progress';
+import { FEATURES } from '../../app/config';
 import { t } from '../../infra/i18n';
 import { showZoneSheet } from '../overlays/ZoneSheet';
 import { go, Route, Screen } from '../router';
@@ -61,7 +62,7 @@ export function MapScreen(r: Extract<Route, { name: 'map' }>): Screen {
     <div class="hx-map__hud">
       <span class="hx-counter" aria-label="${t('totalStars')}">${H.star(true, 24)}${totalStars()}</span>
       <div class="hud-btns">
-        ${iconBtn('trophy', t('achievements'), 'hx-ibtn--sm hx-ibtn--panel', 'data-go="achievements"')}
+        ${FEATURES.achievements ? iconBtn('trophy', t('achievements'), 'hx-ibtn--sm hx-ibtn--panel', 'data-go="achievements"') : ''}
         ${iconBtn('gear', t('settings'), 'hx-ibtn--sm hx-ibtn--panel', 'data-go="settings"')}
       </div>
     </div>

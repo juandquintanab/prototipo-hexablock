@@ -1,4 +1,5 @@
 import { loadJSON, saveJSON } from '../infra/storage';
+import { FEATURES } from './config';
 import type { I18nKey, Lang } from '../infra/i18n';
 import { SHAPES, createGeometry } from '../domain/geometry/GeometryFactory';
 import type { IGridGeometry, Shape } from '../domain/geometry/IGridGeometry';
@@ -130,6 +131,7 @@ export function totalStars(): number {
 /** Logros: cuentan el mejor resultado en cualquier figura. */
 export interface Achievement { id: I18nKey; value: number; goal: number }
 export function achievements(): Achievement[] {
+  if (!FEATURES.achievements) return []; // función apagada: no se calcula nada
   const all = SHAPES.map(s => progress.byShape[s]);
   const maxOf = (f: (x: ShapeProgress) => number) => Math.max(...all.map(f));
   const won = (g: LevelGame) => Math.max(...SHAPES.map(s => levelsWon(g, s)));

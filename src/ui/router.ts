@@ -24,12 +24,15 @@ const factories = new Map<Route['name'], Factory>();
 /** La cortina tarda unos 650 ms en destaparse (260 ms por ficha + 380 ms de ola). */
 const REVEAL_MS = 650;
 
-export function initRouter(container: HTMLElement, screens: Record<Route['name'], Factory>): void {
+/** Pantallas registradas. Las de funciones apagadas (config.ts) no se registran. */
+export function initRouter(container: HTMLElement, screens: Partial<Record<Route['name'], Factory>>): void {
   root = container;
-  for (const [k, f] of Object.entries(screens)) factories.set(k as Route['name'], f);
+  for (const [k, f] of Object.entries(screens)) if (f) factories.set(k as Route['name'], f);
 }
 
 function swap(route: Route): void {
+  // una ruta sin pantalla (función apagada) lleva al mapa
+  if (!factories.has(route.name)) route = { name: 'map' };
   current?.destroy?.();
   current?.el.remove();
   currentRoute = route;

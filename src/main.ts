@@ -2,6 +2,7 @@ import './design-system/tokens.css';
 import './design-system/bundle.css';
 import './app.css';
 import { progress } from './app/progress';
+import { FEATURES } from './app/config';
 import { setMusic, setSound, sfx } from './infra/audio';
 import { setLang } from './infra/i18n';
 import { initRouter, go } from './ui/router';
@@ -25,7 +26,8 @@ initRouter(app, {
   game: GameScreen,
   settings: SettingsScreen,
   catalog: CatalogScreen,
-  achievements: AchievementsScreen,
+  // Logros: solo existe la ruta si la función está prendida (src/app/config.ts)
+  ...(FEATURES.achievements ? { achievements: AchievementsScreen } : {}),
 });
 
 // sonido de toque en cualquier botón
